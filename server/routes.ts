@@ -79,13 +79,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // In a real application, you would serve an actual PDF file
       // For now, we'll create a simple text response
       const resumeContent = `
-ALEX JOHNSON
+ISRAEL SOTO
 Full Stack Developer & Tech Innovator
 
 CONTACT INFORMATION
-Email: alex.johnson@example.com
-LinkedIn: linkedin.com/in/alexjohnson
-GitHub: github.com/alexjohnson
+Email: israel.soto@example.com
+LinkedIn: linkedin.com/in/israelsoto
+GitHub: github.com/israelsoto
 Location: San Francisco, CA
 
 EXPERIENCE
@@ -112,7 +112,7 @@ PROJECTS
       `;
 
       res.setHeader('Content-Type', 'text/plain');
-      res.setHeader('Content-Disposition', 'attachment; filename="alex-johnson-resume.txt"');
+      res.setHeader('Content-Disposition', 'attachment; filename="israel-soto-resume.txt"');
       res.send(resumeContent);
     } catch (error) {
       res.status(500).json({ message: "Failed to download resume" });

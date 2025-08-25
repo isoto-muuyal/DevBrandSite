@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-6 md:mb-0">
             <div className="text-2xl font-bold mb-2" data-testid="footer-name">
-              Alex Johnson
+              Israel Soto
             </div>
             <p className="text-gray-300">Full Stack Developer & Tech Innovator</p>
           </div>
@@ -40,7 +40,7 @@ export default function Footer() {
               <Twitter className="w-6 h-6" />
             </a>
             <a
-              href="mailto:alex.johnson@example.com"
+              href="mailto:israel.soto@example.com"
               className="text-gray-300 hover:text-white transition-colors duration-200"
               data-testid="footer-email"
             >
@@ -50,7 +50,7 @@ export default function Footer() {
         </div>
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400" data-testid="footer-copyright">
-            &copy; 2024 Alex Johnson. Built with passion and modern web technologies.
+            &copy; 2024 Israel Soto. Built with passion and modern web technologies.
           </p>
         </div>
       </div>

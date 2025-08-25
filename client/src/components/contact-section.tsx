@@ -56,7 +56,7 @@ export default function ContactSection() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'alex-johnson-resume.txt';
+        a.download = 'israel-soto-resume.txt';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -105,7 +105,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <div className="font-medium text-primary-800">Email</div>
-                  <div className="text-gray-600">alex.johnson@example.com</div>
+                  <div className="text-gray-600">israel.soto@example.com</div>
                 </div>
               </div>
               <div className="flex items-center space-x-4" data-testid="contact-linkedin">
@@ -114,7 +114,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <div className="font-medium text-primary-800">LinkedIn</div>
-                  <div className="text-gray-600">linkedin.com/in/alexjohnson</div>
+                  <div className="text-gray-600">linkedin.com/in/israelsoto</div>
                 </div>
               </div>
               <div className="flex items-center space-x-4" data-testid="contact-github">
@@ -123,7 +123,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <div className="font-medium text-primary-800">GitHub</div>
-                  <div className="text-gray-600">github.com/alexjohnson</div>
+                  <div className="text-gray-600">github.com/israelsoto</div>
                 </div>
               </div>
               <div className="flex items-center space-x-4" data-testid="contact-location">
