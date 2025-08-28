@@ -173,6 +173,76 @@ The frontend uses TanStack Query for efficient data fetching and caching with th
 
 ## 🚀 Deployment
 
+### Docker Deployment
+
+#### Prerequisites for Docker
+- **Docker** (version 20.10 or higher)
+- **Docker Compose** (version 2.0 or higher)
+
+#### Quick Start with Docker
+1. **Build and run with Docker Compose:**
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Or build and run manually:**
+   ```bash
+   # Build the Docker image
+   docker build -t portfolio-website .
+   
+   # Run the container
+   docker run -p 5000:5000 portfolio-website
+   ```
+
+3. **Access the application:**
+   ```
+   http://localhost:5000
+   ```
+
+#### Docker Features
+- **Multi-stage build** for optimized image size
+- **Non-root user** for enhanced security
+- **Health checks** to monitor container status
+- **Alpine Linux** base image for minimal footprint
+- **Production-ready** configuration with proper environment variables
+
+#### Docker Commands
+
+**Build the image:**
+```bash
+docker build -t portfolio-website .
+```
+
+**Run in detached mode:**
+```bash
+docker run -d -p 5000:5000 --name portfolio portfolio-website
+```
+
+**View logs:**
+```bash
+docker logs portfolio
+```
+
+**Stop the container:**
+```bash
+docker stop portfolio
+```
+
+**Remove the container:**
+```bash
+docker rm portfolio
+```
+
+#### Environment Variables for Docker
+You can pass environment variables to the Docker container:
+
+```bash
+docker run -p 5000:5000 \
+  -e NODE_ENV=production \
+  -e PORT=5000 \
+  portfolio-website
+```
+
 ### Replit Deployment
 This project is optimized for deployment on Replit:
 
