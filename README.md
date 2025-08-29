@@ -79,7 +79,7 @@ Add the following variables (optional for local development):
 
 ```env
 NODE_ENV=development
-PORT=5000
+PORT=5002
 DATABASE_URL=your_database_url_here
 ```
 
@@ -92,7 +92,7 @@ npm run dev
 ```
 
 This command will:
-- Start the Express.js backend server on port 5000
+- Start the Express.js backend server on port 5002
 - Start the Vite development server for the frontend
 - Enable hot module replacement for instant updates
 - Serve both frontend and backend on the same port
@@ -102,7 +102,7 @@ This command will:
 Open your web browser and navigate to:
 
 ```
-http://localhost:5000
+http://localhost:5002
 ```
 
 The portfolio website should now be running locally with all features available.
@@ -191,12 +191,12 @@ The frontend uses TanStack Query for efficient data fetching and caching with th
    docker build -t portfolio-website .
    
    # Run the container
-   docker run -p 5000:5000 portfolio-website
+   docker run -p 5002:5002 portfolio-website
    ```
 
 3. **Access the application:**
    ```
-   http://localhost:5000
+   http://localhost:5002
    ```
 
 #### Docker Features
@@ -215,7 +215,7 @@ docker build -t portfolio-website .
 
 **Run in detached mode:**
 ```bash
-docker run -d -p 5000:5000 --name portfolio portfolio-website
+docker run -d -p 5002:5002 --name portfolio portfolio-website
 ```
 
 **View logs:**
@@ -237,9 +237,9 @@ docker rm portfolio
 You can pass environment variables to the Docker container:
 
 ```bash
-docker run -p 5000:5000 \
+docker run -p 5002:5002 \
   -e NODE_ENV=production \
-  -e PORT=5000 \
+  -e PORT=5002 \
   portfolio-website
 ```
 
