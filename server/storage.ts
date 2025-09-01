@@ -1,5 +1,7 @@
 import { type Project, type InsertProject, type ContactMessage, type InsertContactMessage, type Article, type InsertArticle } from "@shared/schema";
 import { randomUUID } from "crypto";
+import fs from "fs";
+import path from "path";
 
 export interface IStorage {
   // Projects
@@ -31,105 +33,86 @@ export class MemStorage implements IStorage {
   }
 
   private seedData() {
-    // Seed projects
-    const seedProjects: Project[] = [
-      {
-        id: "1",
-        name: "BudgetBuddy",
-        description: "A comprehensive personal finance management application built with React and Node.js. Features include expense tracking, budget planning, and financial insights with beautiful data visualizations.",
-        technologies: ["React", "Node.js", "PostgreSQL", "Chart.js", "Tailwind CSS"],
-        githubUrl: "https://github.com/example/budgetbuddy",
-        liveUrl: "https://budgetbuddy-demo.vercel.app",
-        imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        status: "In Development",
-        featured: "true",
-        createdAt: new Date(),
-      },
-      {
-        id: "2",
-        name: "AI CV Builder",
-        description: "An intelligent resume builder powered by AI that helps users create professional CVs. Features include template suggestions, content optimization, and ATS-friendly formatting.",
-        technologies: ["Next.js", "OpenAI API", "Tailwind CSS", "Supabase", "TypeScript"],
-        githubUrl: "https://github.com/example/ai-cv-builder",
-        liveUrl: "https://ai-cv-builder.vercel.app",
-        imageUrl: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        status: "Completed",
-        featured: "true",
-        createdAt: new Date(),
-      },
-      {
-        id: "3",
-        name: "Microservices Architecture",
-        description: "A complete microservices architecture example demonstrating service discovery, API gateway, distributed tracing, and containerized deployment with Docker and Kubernetes.",
-        technologies: ["Spring Boot", "Docker", "Kubernetes", "Redis", "Java"],
-        githubUrl: "https://github.com/example/microservices-demo",
-        liveUrl: null,
-        imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        status: "Open Source",
-        featured: "true",
-        createdAt: new Date(),
-      },
-      {
-        id: "4",
-        name: "Ollama API Wrapper",
-        description: "A TypeScript wrapper for the Ollama API that simplifies local LLM integration. Includes streaming support, error handling, and comprehensive type definitions for seamless development experience.",
-        technologies: ["TypeScript", "Node.js", "Ollama", "Jest", "npm"],
-        githubUrl: "https://github.com/example/ollama-wrapper",
-        liveUrl: null,
-        imageUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        status: "Published",
-        featured: "true",
-        createdAt: new Date(),
+    // Load projects from JSON file
+    this.loadProjects();
+    
+    // Load articles from JSON file  
+    this.loadArticles();
+  }
+  
+  private loadProjects() {
+    try {
+      const projectsPath = path.join(process.cwd(), 'projects.json');
+      if (fs.existsSync(projectsPath)) {
+        const projectsData = fs.readFileSync(projectsPath, 'utf8');
+        const projectsJson = JSON.parse(projectsData);
+        
+        projectsJson.forEach((proj: any) => {
+          const project: Project = {
+            id: proj.id,
+            name: proj.title,
+            description: proj.description,
+            technologies: [], // Not used in new format
+            githubUrl: proj.github_url,
+            liveUrl: null,
+            imageUrl: proj.image_header_url,
+            status: "Active",
+            featured: "true",
+            createdAt: new Date(),
+          };
+          this.projects.set(project.id, project);
+        });
       }
-    ];
-
-    seedProjects.forEach(project => {
-      this.projects.set(project.id, project);
-    });
-
-    // Seed articles
-    const seedArticles: Article[] = [
-      {
-        id: "1",
-        title: "Building Microservices with Spring Boot and Docker",
-        excerpt: "A comprehensive guide to designing and implementing a microservices architecture using Spring Boot, Docker containers, and service discovery patterns.",
-        content: "Full article content here...",
-        tags: ["Spring Boot", "Docker", "Microservices"],
-        publishedDate: "March 15, 2024",
-        readTime: "8 min read",
-        imageUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        slug: "microservices-spring-boot-docker",
-        createdAt: new Date(),
-      },
-      {
-        id: "2",
-        title: "React Performance Optimization Techniques",
-        excerpt: "Learn advanced techniques to optimize React applications, including code splitting, memoization, and efficient state management strategies.",
-        content: "Full article content here...",
-        tags: ["React", "Performance", "JavaScript"],
-        publishedDate: "March 8, 2024",
-        readTime: "6 min read",
-        imageUrl: "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        slug: "react-performance-optimization",
-        createdAt: new Date(),
-      },
-      {
-        id: "3",
-        title: "Integrating AI Models in Web Applications",
-        excerpt: "Explore practical approaches to integrating AI models into web applications, covering API design, performance considerations, and user experience patterns.",
-        content: "Full article content here...",
-        tags: ["AI", "APIs", "Web Development"],
-        publishedDate: "February 28, 2024",
-        readTime: "10 min read",
-        imageUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-        slug: "integrating-ai-models-web-applications",
-        createdAt: new Date(),
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    }
+  }
+  
+  private loadArticles() {
+    try {
+      const articlesPath = path.join(process.cwd(), 'articles.json');
+      if (fs.existsSync(articlesPath)) {
+        const articlesData = fs.readFileSync(articlesPath, 'utf8');
+        const articlesJson = JSON.parse(articlesData);
+        
+        articlesJson.forEach((art: any) => {
+          const article: Article = {
+            id: art.id,
+            title: art.title,
+            excerpt: this.getExcerpt(art.content),
+            content: art.content,
+            tags: [],
+            publishedDate: new Date().toLocaleDateString(),
+            readTime: this.calculateReadTime(art.content),
+            imageUrl: art.image_header_url,
+            slug: this.createSlug(art.title),
+            createdAt: new Date(),
+          };
+          this.articles.set(article.id, article);
+        });
       }
-    ];
-
-    seedArticles.forEach(article => {
-      this.articles.set(article.id, article);
-    });
+    } catch (error) {
+      console.error('Error loading articles:', error);
+    }
+  }
+  
+  private getExcerpt(content: string): string {
+    const words = content.split(' ');
+    return words.slice(0, 30).join(' ') + (words.length > 30 ? '...' : '');
+  }
+  
+  private calculateReadTime(content: string): string {
+    const wordsPerMinute = 200;
+    const wordCount = content.split(' ').length;
+    const minutes = Math.ceil(wordCount / wordsPerMinute);
+    return `${minutes} min read`;
+  }
+  
+  private createSlug(title: string): string {
+    return title.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
   }
 
   async getProjects(): Promise<Project[]> {

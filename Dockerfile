@@ -24,15 +24,15 @@ RUN adduser -S portfolio -u 1001
 RUN chown -R portfolio:nodejs /app
 USER portfolio
 
-# Expose port 5002
-EXPOSE 5002
+# Expose port 5000
+EXPOSE 5000
 
 # Set environment variable for production
 ENV NODE_ENV=production
 
 # Health check to ensure container is running properly
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5002/api/health || exit 1
+  CMD curl -f http://localhost:5000/api/health || exit 1
 
 # Start the application
 CMD ["npm", "start"]

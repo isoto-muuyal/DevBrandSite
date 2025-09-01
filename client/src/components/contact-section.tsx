@@ -56,7 +56,7 @@ export default function ContactSection() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'israel-soto-resume.txt';
+        a.download = 'israel-soto-resume.pdf';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -105,7 +105,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <div className="font-medium text-primary-800">Email</div>
-                  <div className="text-gray-600">israel.soto@example.com</div>
+                  <div className="text-gray-600">israel.soto@muuyal.tech</div>
                 </div>
               </div>
               <div className="flex items-center space-x-4" data-testid="contact-linkedin">
@@ -114,7 +114,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <div className="font-medium text-primary-800">LinkedIn</div>
-                  <div className="text-gray-600">linkedin.com/in/israelsoto</div>
+                  <div className="text-gray-600">linkedin.com/in/israel-soto-923649b8</div>
                 </div>
               </div>
               <div className="flex items-center space-x-4" data-testid="contact-github">
@@ -123,7 +123,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <div className="font-medium text-primary-800">GitHub</div>
-                  <div className="text-gray-600">github.com/israelsoto</div>
+                  <div className="text-gray-600">github.com/isoto-muuyal</div>
                 </div>
               </div>
               <div className="flex items-center space-x-4" data-testid="contact-location">
@@ -132,7 +132,7 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <div className="font-medium text-primary-800">Location</div>
-                  <div className="text-gray-600">San Francisco, CA</div>
+                  <div className="text-gray-600">Jersey City, NJ</div>
                 </div>
               </div>
             </div>

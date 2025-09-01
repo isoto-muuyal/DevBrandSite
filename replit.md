@@ -8,6 +8,31 @@ A modern, responsive personal portfolio website for a full stack developer showc
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (August 29, 2025)
+
+### Portfolio Content Updates
+- **About Me**: Updated to reflect passion for new technology and problem-solving through coding
+- **My Journey**: Comprehensive professional history from IT engineer to Technical Leader role
+- **Contact Info**: Updated to israel.soto@muuyal.tech, Jersey City NJ location
+- **Social Links**: GitHub (github.com/isoto-muuyal), LinkedIn (israel-soto-923649b8)
+- **Resume Download**: Now serves actual PDF resume from attached_assets
+
+### Dynamic Content System
+- **Projects**: Now loaded from projects.json file with dynamic structure
+- **Articles**: Dynamic loading from articles.json (currently empty, ready for content)
+- **Blog Page**: Separate /blog route with full article display functionality
+
+### Removed Sections
+- Removed AI CV Builder project as requested
+- Removed certifications & achievements section
+- Removed GitHub Activity statistics section
+
+### Enhanced Features
+- Projects "View Details" now links directly to GitHub repositories
+- Empty state handling for articles with helpful messaging
+- Blog page with proper navigation and article display format
+- PDF resume download functionality with proper file serving
+
 ## System Architecture
 
 ### Frontend Architecture

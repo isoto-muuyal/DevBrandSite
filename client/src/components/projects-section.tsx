@@ -7,12 +7,7 @@ export default function ProjectsSection() {
     queryKey: ["/api/projects/featured"],
   });
 
-  const githubStats = {
-    repos: 47,
-    commits: 1247,
-    stars: 156,
-    followers: 89
-  };
+
 
   if (isLoading) {
     return (
@@ -115,57 +110,22 @@ export default function ProjectsSection() {
                   <span className="text-sm text-gray-500" data-testid={`project-status-${index}`}>
                     {project.status}
                   </span>
-                  <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  <a
+                    href={project.githubUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 inline-block text-center"
                     data-testid={`project-details-${index}`}
                   >
                     View Details
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* GitHub Stats */}
-        <div className="mt-16 bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-primary-900 mb-4" data-testid="github-stats-title">
-              GitHub Activity
-            </h3>
-            <p className="text-gray-600">Check out my open source contributions and code repositories</p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-6 text-center">
-            <div data-testid="github-repos">
-              <div className="text-3xl font-bold text-blue-600 mb-2">{githubStats.repos}</div>
-              <div className="text-gray-600">Repositories</div>
-            </div>
-            <div data-testid="github-commits">
-              <div className="text-3xl font-bold text-green-600 mb-2">{githubStats.commits}</div>
-              <div className="text-gray-600">Commits</div>
-            </div>
-            <div data-testid="github-stars">
-              <div className="text-3xl font-bold text-purple-600 mb-2">{githubStats.stars}</div>
-              <div className="text-gray-600">Stars</div>
-            </div>
-            <div data-testid="github-followers">
-              <div className="text-3xl font-bold text-orange-600 mb-2">{githubStats.followers}</div>
-              <div className="text-gray-600">Followers</div>
-            </div>
-          </div>
-          <div className="text-center mt-8">
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 bg-primary-800 text-white px-6 py-3 rounded-lg hover:bg-primary-900 transition-colors duration-200"
-              data-testid="github-profile-link"
-            >
-              <Github className="w-5 h-5" />
-              <span>View GitHub Profile</span>
-            </a>
-          </div>
-        </div>
+
       </div>
     </section>
   );

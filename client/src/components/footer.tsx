@@ -1,4 +1,4 @@
-import { Github, Linkedin, Twitter, Mail } from "lucide-react";
+import { Github, Linkedin, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -13,7 +13,7 @@ export default function Footer() {
           </div>
           <div className="flex space-x-6">
             <a
-              href="https://github.com"
+              href="https://github.com/isoto-muuyal"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-white transition-colors duration-200"
@@ -22,7 +22,7 @@ export default function Footer() {
               <Github className="w-6 h-6" />
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/israel-soto-923649b8/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-300 hover:text-white transition-colors duration-200"
@@ -31,22 +31,18 @@ export default function Footer() {
               <Linkedin className="w-6 h-6" />
             </a>
             <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-300 hover:text-white transition-colors duration-200"
-              data-testid="footer-twitter"
-            >
-              <Twitter className="w-6 h-6" />
-            </a>
-            <a
-              href="mailto:israel.soto@example.com"
+              href="mailto:israel.soto@muuyal.tech"
               className="text-gray-300 hover:text-white transition-colors duration-200"
               data-testid="footer-email"
             >
               <Mail className="w-6 h-6" />
             </a>
           </div>
+        </div>
+        <div className="text-center mt-6 text-gray-400">
+          <p className="text-sm">
+            <strong>Location:</strong> Jersey City, NJ
+          </p>
         </div>
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-400" data-testid="footer-copyright">

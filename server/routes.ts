@@ -85,44 +85,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Download resume
   app.get("/api/resume/download", async (req, res) => {
     try {
-      // In a real application, you would serve an actual PDF file
-      // For now, we'll create a simple text response
-      const resumeContent = `
-ISRAEL SOTO
-Full Stack Developer & Tech Innovator
-
-CONTACT INFORMATION
-Email: israel.soto@example.com
-LinkedIn: linkedin.com/in/israelsoto
-GitHub: github.com/israelsoto
-Location: San Francisco, CA
-
-EXPERIENCE
-Senior Full Stack Developer (2020 - Present)
-- Led development teams and architected scalable systems
-- Built applications handling millions of requests daily
-- Specialized in React, Node.js, and cloud technologies
-
-SKILLS
-Frontend: React.js, TypeScript, Tailwind CSS, Next.js
-Backend: Node.js, Spring Boot, PostgreSQL, MongoDB
-Cloud & DevOps: AWS, Docker, Kubernetes, CI/CD
-
-CERTIFICATIONS
-- AWS Solutions Architect (2023)
-- Google Cloud Professional (2023)
-- Kubernetes Administrator (2022)
-
-PROJECTS
-- BudgetBuddy: Personal finance management application
-- AI CV Builder: AI-powered resume builder
-- Microservices Architecture: Complete microservices example
-- Ollama API Wrapper: TypeScript wrapper for Ollama API
-      `;
-
-      res.setHeader('Content-Type', 'text/plain');
-      res.setHeader('Content-Disposition', 'attachment; filename="israel-soto-resume.txt"');
-      res.send(resumeContent);
+      const resumePath = path.join(process.cwd(), 'attached_assets', 'Israel_Soto_Resume_1756754540992.pdf');
+      
+      if (fs.existsSync(resumePath)) {
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename="israel-soto-resume.pdf"');
+        
+        const fileStream = fs.createReadStream(resumePath);
+        fileStream.pipe(res);
+      } else {
+        res.status(404).json({ message: "Resume file not found" });
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to download resume" });
     }

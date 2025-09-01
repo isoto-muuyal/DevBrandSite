@@ -32,9 +32,10 @@ export default function BlogSection() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {articles?.map((article, index) => (
-            <article
+        {articles && articles.length > 0 ? (
+          <div className="grid lg:grid-cols-3 gap-8">
+            {articles.map((article, index) => (
+              <article
               key={article.id}
               className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
               data-testid={`article-card-${index}`}
@@ -82,20 +83,29 @@ export default function BlogSection() {
                   </a>
                 </div>
               </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-6xl text-gray-300 mb-4">📝</div>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">No articles yet</h3>
+            <p className="text-gray-500">Articles will appear here when added to the articles.json file.</p>
+          </div>
+        )}
 
-        <div className="text-center mt-12">
-          <a
-            href="#"
-            className="inline-flex items-center space-x-2 bg-primary-800 text-white px-6 py-3 rounded-lg hover:bg-primary-900 transition-colors duration-200"
-            data-testid="view-all-articles"
-          >
-            <i className="fas fa-book-open"></i>
-            <span>View All Articles</span>
-          </a>
-        </div>
+        {articles && articles.length > 0 && (
+          <div className="text-center mt-12">
+            <a
+              href="/blog"
+              className="inline-flex items-center space-x-2 bg-primary-800 text-white px-6 py-3 rounded-lg hover:bg-primary-900 transition-colors duration-200"
+              data-testid="view-all-articles"
+            >
+              <i className="fas fa-book-open"></i>
+              <span>View All Articles</span>
+            </a>
+          </div>
+        )}
       </div>
     </section>
   );

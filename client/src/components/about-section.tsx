@@ -14,30 +14,11 @@ export default function AboutSection() {
     }
   ];
 
-  const certifications = [
-    {
-      name: "AWS Solutions Architect",
-      issuer: "Amazon Web Services",
-      date: "2023",
-      icon: "fas fa-award"
-    },
-    {
-      name: "Google Cloud Professional",
-      issuer: "Google Cloud Platform",
-      date: "2023",
-      icon: "fas fa-certificate"
-    },
-    {
-      name: "Kubernetes Administrator",
-      issuer: "Cloud Native Computing Foundation",
-      date: "2022",
-      icon: "fas fa-medal"
-    }
-  ];
+
 
   const careerGoals = [
     "Lead innovative tech projects at a forward-thinking company",
-    "Contribute to open-source projects and developer community",
+    "Contribute to open-source projects and developer community", 
     "Mentor junior developers and share knowledge through content",
     "Explore cutting-edge technologies like AI/ML integration"
   ];
@@ -50,7 +31,7 @@ export default function AboutSection() {
             About Me
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Passionate full-stack developer with expertise in modern web technologies and a drive for continuous learning.
+            Passionate about new technology and how to solve problems with coding.
           </p>
         </div>
 
@@ -58,10 +39,7 @@ export default function AboutSection() {
           <div>
             <h3 className="text-2xl font-bold text-primary-800 mb-6">My Journey</h3>
             <p className="text-gray-600 mb-6 leading-relaxed" data-testid="text-bio">
-              With over 5 years of experience in software development, I specialize in building scalable web applications using React, Node.js, and cloud technologies. My passion lies in creating efficient, user-friendly solutions that solve real-world problems.
-            </p>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              I've worked with startups and established companies, leading development teams and architecting systems that handle millions of requests daily. My approach combines technical excellence with strategic thinking to deliver impactful results.
+              I've worked on many roles with great results, I started as IT engineer and during 5 years progress to be in charge of projects overseas, IT specialist and more. Then I migrated to coding where I've worked for Hewlett-Packard for 7 years on multiple internal projects as well as for external clients. And the for the last 7 years I've work as a Technical Leader on diverse projects.
             </p>
             
             <h4 className="text-xl font-semibold text-primary-800 mb-4">Career Goals</h4>
@@ -99,28 +77,7 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* Certifications */}
-        <div className="bg-gradient-to-r from-blue-50 to-primary-50 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-primary-800 mb-6 text-center" data-testid="certifications-title">
-            Certifications & Achievements
-          </h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            {certifications.map((cert, index) => (
-              <div
-                key={cert.name}
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-200"
-                data-testid={`certification-${index}`}
-              >
-                <div className="text-center">
-                  <i className={`${cert.icon} text-3xl text-blue-600 mb-4`}></i>
-                  <h4 className="font-semibold text-primary-800 mb-2">{cert.name}</h4>
-                  <p className="text-sm text-gray-600">{cert.issuer}</p>
-                  <p className="text-xs text-gray-500 mt-1">{cert.date}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+
       </div>
     </section>
   );

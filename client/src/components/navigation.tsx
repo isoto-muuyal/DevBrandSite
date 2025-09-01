@@ -21,6 +21,11 @@ export default function Navigation({ activeSection, onSectionClick }: Navigation
     onSectionClick(sectionId);
     setIsMobileMenuOpen(false);
     
+    if (sectionId === 'blog') {
+      window.location.href = '/blog';
+      return;
+    }
+    
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
