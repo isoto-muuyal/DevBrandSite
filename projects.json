@@ -11,13 +11,13 @@
     "title": "Microservices Architecture",
     "description": "A complete microservices architecture example demonstrating service discovery, API gateway, distributed tracing, and containerized deployment with Docker and Kubernetes.",
     "image_header_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-    "github_url": "https://github.com/isoto-muuyal/microservices-demo"
+    "github_url": "https://github.com/isoto-muuyal/microservices-sandbox"
   },
   {
     "id": "3",
     "title": "Ollama API Wrapper",
     "description": "A TypeScript wrapper for the Ollama API that simplifies local LLM integration. Includes streaming support, error handling, and comprehensive type definitions for seamless development experience.",
     "image_header_url": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-    "github_url": "https://github.com/isoto-muuyal/ollama-wrapper"
+    "github_url": "https://github.com/isoto-muuyal/ai-decision-making"
   }
 ]
