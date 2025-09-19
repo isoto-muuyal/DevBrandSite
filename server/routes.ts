@@ -102,8 +102,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const options = {
-  key: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/privkey.pem"),
-  cert: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/fullchain.pem")
+  //key: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/privkey.pem"),
+  //cert: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/fullchain.pem")
 };
 
   const httpsServer = createServer(options, app);
