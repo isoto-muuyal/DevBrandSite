@@ -1,0 +1,93 @@
+{
+  "navigation": {
+    "name": "Israel Soto",
+    "home": "Inicio",
+    "about": "Acerca de",
+    "projects": "Proyectos",
+    "blog": "Blog",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "title": "Desarrollador Full Stack e ",
+    "titleHighlight": "Innovador Tecnológico",
+    "subtitle": "Construyendo aplicaciones web escalables con tecnologías modernas. Apasionado por microservicios, integración de IA y crear experiencias de usuario excepcionales.",
+    "viewWorkButton": "Ver Mi Trabajo",
+    "getInTouchButton": "Contactar",
+    "availableStatus": "Disponible para nuevos proyectos",
+    "imageAlt": "Espacio de trabajo de desarrollador con múltiples monitores mostrando código"
+  },
+  "about": {
+    "title": "Sobre Mí",
+    "subtitle": "Apasionado por la nueva tecnología y cómo resolver problemas con código.",
+    "journeyTitle": "Mi Trayectoria",
+    "journeyText": "He trabajado en muchos roles con excelentes resultados. Comencé como ingeniero de TI y durante 5 años progresé para estar a cargo de proyectos en el extranjero, especialista en TI y más. Luego migré a la programación donde trabajé para Hewlett-Packard durante 7 años en múltiples proyectos internos así como para clientes externos. Y durante los últimos 7 años he trabajado como Líder Técnico en diversos proyectos.",
+    "careerGoalsTitle": "Objetivos Profesionales",
+    "careerGoals": [
+      "Liderar proyectos tecnológicos innovadores en una empresa visionaria",
+      "Contribuir a proyectos de código abierto y a la comunidad de desarrolladores",
+      "Asesorar a desarrolladores junior y compartir conocimientos a través de contenido",
+      "Explorar tecnologías de vanguardia como la integración de IA/ML"
+    ],
+    "skillsTitle": "Habilidades y Tecnologías",
+    "skillCategories": {
+      "frontend": "Desarrollo Frontend",
+      "backend": "Desarrollo Backend",
+      "cloudDevOps": "Nube y DevOps"
+    }
+  },
+  "projects": {
+    "title": "Proyectos Destacados",
+    "subtitle": "Una muestra de mi trabajo reciente, desde aplicaciones full-stack hasta arquitecturas de microservicios e integraciones de IA.",
+    "loading": "Cargando proyectos...",
+    "viewDetails": "Ver Detalles"
+  },
+  "blog": {
+    "title": "Últimos Artículos",
+    "subtitle": "Compartiendo ideas, tutoriales y pensamientos sobre desarrollo web moderno y tendencias tecnológicas.",
+    "loading": "Cargando artículos...",
+    "viewAll": "Ver Todos los Artículos",
+    "readMore": "Leer Artículo Completo",
+    "noArticlesTitle": "Aún No Hay Artículos Publicados",
+    "noArticlesMessage": "Los artículos aparecerán aquí cuando se agreguen al archivo articles.json.",
+    "backToHome": "Volver al Inicio",
+    "pageTitle": "Blog y Artículos"
+  },
+  "contact": {
+    "title": "Trabajemos Juntos",
+    "subtitle": "Siempre estoy interesado en nuevas oportunidades y proyectos emocionantes. Hablemos sobre cómo podemos colaborar.",
+    "getInTouchTitle": "Ponte en Contacto",
+    "emailLabel": "Correo",
+    "linkedinLabel": "LinkedIn",
+    "githubLabel": "GitHub",
+    "locationLabel": "Ubicación",
+    "locationValue": "Jersey City, NJ",
+    "resumeTitle": "Currículum",
+    "resumeDescription": "Descarga mi currículum más reciente para conocer más sobre mi experiencia y calificaciones.",
+    "downloadResume": "Descargar Currículum",
+    "sendMessageTitle": "Enviar un Mensaje",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Tu nombre completo",
+    "emailPlaceholder": "tu.correo@ejemplo.com",
+    "subjectLabel": "Asunto",
+    "subjectPlaceholder": "Colaboración en proyecto",
+    "messageLabel": "Mensaje",
+    "messagePlaceholder": "Cuéntame sobre tu proyecto u oportunidad...",
+    "sendButton": "Enviar Mensaje",
+    "sendingButton": "Enviando...",
+    "successTitle": "¡Mensaje enviado exitosamente!",
+    "successDescription": "Gracias por tu mensaje. Me pondré en contacto contigo pronto.",
+    "errorTitle": "Error al enviar el mensaje",
+    "errorDescription": "Por favor intenta nuevamente más tarde o contáctame directamente por correo.",
+    "resumeSuccessTitle": "¡Currículum descargado!",
+    "resumeSuccessDescription": "Gracias por tu interés en mi perfil.",
+    "resumeErrorTitle": "Error en la descarga",
+    "resumeErrorDescription": "Por favor intenta nuevamente más tarde o contáctame directamente."
+  },
+  "footer": {
+    "name": "Israel Soto",
+    "title": "Desarrollador Full Stack e Innovador Tecnológico",
+    "location": "Ubicación:",
+    "locationValue": "Jersey City, NJ",
+    "copyright": "© 2024 Israel Soto. Construido con pasión y tecnologías web modernas."
+  }
+}

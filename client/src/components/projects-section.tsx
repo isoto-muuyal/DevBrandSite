@@ -1,21 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Project } from "@shared/schema";
 import { ExternalLink, Github } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ProjectsSection() {
+  const { t } = useLanguage();
   const { data: projects, isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects/featured"],
   });
-
-
 
   if (isLoading) {
     return (
       <section id="projects" className="py-20 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4">Featured Projects</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Loading projects...</p>
+            <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4">{t.projects.title}</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.projects.loading}</p>
           </div>
         </div>
       </section>
@@ -42,10 +42,10 @@ export default function ProjectsSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4" data-testid="projects-title">
-            Featured Projects
+            {t.projects.title}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            A showcase of my recent work, from full-stack applications to microservices architecture and AI integrations.
+            {t.projects.subtitle}
           </p>
         </div>
 
@@ -117,7 +117,7 @@ export default function ProjectsSection() {
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 inline-block text-center"
                     data-testid={`project-details-${index}`}
                   >
-                    View Details
+                    {t.projects.viewDetails}
                   </a>
                 </div>
               </div>

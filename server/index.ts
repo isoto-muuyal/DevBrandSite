@@ -63,10 +63,18 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5001', 10);
   
+  console.log(`Starting server on port ${port}`);
+
   // Use localhost for local development, 0.0.0.0 for production
   const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
-  
-  server.listen(port, host, () => {
+   try {
+  server.listen({
+    port: "5002", 
+    host: "127.0.0.1"}, () => {
     log(`serving on ${host}:${port}`);
   });
+  } catch (err) {
+    console.error("Error starting server:", err);
+    process.exit(1);}
+
 })();

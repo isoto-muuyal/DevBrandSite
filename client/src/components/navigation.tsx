@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSelector from "@/components/language-selector";
 
 interface NavigationProps {
   activeSection: string;
@@ -8,13 +10,14 @@ interface NavigationProps {
 
 export default function Navigation({ activeSection, onSectionClick }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const navItems = [
-    { id: "home", label: "Home" },
-    { id: "about", label: "About" },
-    { id: "projects", label: "Projects" },
-    { id: "blog", label: "Blog" },
-    { id: "contact", label: "Contact" },
+    { id: "home", label: t.navigation.home },
+    { id: "about", label: t.navigation.about },
+    { id: "projects", label: t.navigation.projects },
+    { id: "blog", label: t.navigation.blog },
+    { id: "contact", label: t.navigation.contact },
   ];
 
   const handleNavClick = (sectionId: string) => {
@@ -37,11 +40,11 @@ export default function Navigation({ activeSection, onSectionClick }: Navigation
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="font-bold text-xl text-primary-800" data-testid="nav-logo">
-            Israel Soto
+            {t.navigation.name}
           </div>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -56,20 +59,24 @@ export default function Navigation({ activeSection, onSectionClick }: Navigation
                 {item.label}
               </button>
             ))}
+            <LanguageSelector />
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-gray-600"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            data-testid="mobile-menu-toggle"
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
+          {/* Mobile Menu and Language Selector */}
+          <div className="md:hidden flex items-center space-x-4">
+            <LanguageSelector />
+            <button
+              className="text-gray-600"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              data-testid="mobile-menu-toggle"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}

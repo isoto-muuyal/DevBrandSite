@@ -1,0 +1,93 @@
+{
+  "navigation": {
+    "name": "Israel Soto",
+    "home": "Home",
+    "about": "About",
+    "projects": "Projects",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Full Stack Developer & ",
+    "titleHighlight": "Tech Innovator",
+    "subtitle": "Building scalable web applications with modern technologies. Passionate about microservices, AI integration, and creating exceptional user experiences.",
+    "viewWorkButton": "View My Work",
+    "getInTouchButton": "Get In Touch",
+    "availableStatus": "Available for new projects",
+    "imageAlt": "Developer workspace with multiple monitors showing code"
+  },
+  "about": {
+    "title": "About Me",
+    "subtitle": "Passionate about new technology and how to solve problems with coding.",
+    "journeyTitle": "My Journey",
+    "journeyText": "I've worked on many roles with great results, I started as IT engineer and during 5 years progress to be in charge of projects overseas, IT specialist and more. Then I migrated to coding where I've worked for Hewlett-Packard for 7 years on multiple internal projects as well as for external clients. And the for the last 7 years I've work as a Technical Leader on diverse projects.",
+    "careerGoalsTitle": "Career Goals",
+    "careerGoals": [
+      "Lead innovative tech projects at a forward-thinking company",
+      "Contribute to open-source projects and developer community",
+      "Mentor junior developers and share knowledge through content",
+      "Explore cutting-edge technologies like AI/ML integration"
+    ],
+    "skillsTitle": "Skills & Technologies",
+    "skillCategories": {
+      "frontend": "Frontend Development",
+      "backend": "Backend Development",
+      "cloudDevOps": "Cloud & DevOps"
+    }
+  },
+  "projects": {
+    "title": "Featured Projects",
+    "subtitle": "A showcase of my recent work, from full-stack applications to microservices architecture and AI integrations.",
+    "loading": "Loading projects...",
+    "viewDetails": "View Details"
+  },
+  "blog": {
+    "title": "Latest Articles",
+    "subtitle": "Sharing insights, tutorials, and thoughts on modern web development and technology trends.",
+    "loading": "Loading articles...",
+    "viewAll": "View All Articles",
+    "readMore": "Read Full Article",
+    "noArticlesTitle": "No Articles Published Yet",
+    "noArticlesMessage": "Articles will appear here when added to the articles.json file.",
+    "backToHome": "Back to Home",
+    "pageTitle": "Blog & Articles"
+  },
+  "contact": {
+    "title": "Let's Work Together",
+    "subtitle": "I'm always interested in new opportunities and exciting projects. Let's discuss how we can collaborate.",
+    "getInTouchTitle": "Get In Touch",
+    "emailLabel": "Email",
+    "linkedinLabel": "LinkedIn",
+    "githubLabel": "GitHub",
+    "locationLabel": "Location",
+    "locationValue": "Jersey City, NJ",
+    "resumeTitle": "Resume",
+    "resumeDescription": "Download my latest resume to learn more about my experience and qualifications.",
+    "downloadResume": "Download Resume",
+    "sendMessageTitle": "Send a Message",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your full name",
+    "emailPlaceholder": "your.email@example.com",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Project collaboration",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell me about your project or opportunity...",
+    "sendButton": "Send Message",
+    "sendingButton": "Sending...",
+    "successTitle": "Message sent successfully!",
+    "successDescription": "Thank you for your message. I'll get back to you soon.",
+    "errorTitle": "Failed to send message",
+    "errorDescription": "Please try again later or contact me directly via email.",
+    "resumeSuccessTitle": "Resume downloaded!",
+    "resumeSuccessDescription": "Thank you for your interest in my profile.",
+    "resumeErrorTitle": "Download failed",
+    "resumeErrorDescription": "Please try again later or contact me directly."
+  },
+  "footer": {
+    "name": "Israel Soto",
+    "title": "Full Stack Developer & Tech Innovator",
+    "location": "Location:",
+    "locationValue": "Jersey City, NJ",
+    "copyright": "© 2024 Israel Soto. Built with passion and modern web technologies."
+  }
+}

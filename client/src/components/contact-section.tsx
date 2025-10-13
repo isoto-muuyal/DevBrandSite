@@ -10,11 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Mail, MapPin, Download, Github, Linkedin } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { z } from "zod";
 
 type ContactFormData = z.infer<typeof insertContactMessageSchema>;
 
 export default function ContactSection() {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -34,15 +36,15 @@ export default function ContactSection() {
     },
     onSuccess: () => {
       toast({
-        title: "Message sent successfully!",
-        description: "Thank you for your message. I'll get back to you soon.",
+        title: t.contact.successTitle,
+        description: t.contact.successDescription,
       });
       form.reset();
     },
     onError: () => {
       toast({
-        title: "Failed to send message",
-        description: "Please try again later or contact me directly via email.",
+        title: t.contact.errorTitle,
+        description: t.contact.errorDescription,
         variant: "destructive",
       });
     },
@@ -63,16 +65,16 @@ export default function ContactSection() {
         document.body.removeChild(a);
         
         toast({
-          title: "Resume downloaded!",
-          description: "Thank you for your interest in my profile.",
+          title: t.contact.resumeSuccessTitle,
+          description: t.contact.resumeSuccessDescription,
         });
       } else {
         throw new Error('Download failed');
       }
     } catch (error) {
       toast({
-        title: "Download failed",
-        description: "Please try again later or contact me directly.",
+        title: t.contact.resumeErrorTitle,
+        description: t.contact.resumeErrorDescription,
         variant: "destructive",
       });
     }
@@ -87,24 +89,24 @@ export default function ContactSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4" data-testid="contact-title">
-            Let's Work Together
+            {t.contact.title}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            I'm always interested in new opportunities and exciting projects. Let's discuss how we can collaborate.
+            {t.contact.subtitle}
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Information */}
           <div>
-            <h3 className="text-2xl font-bold text-primary-800 mb-6">Get In Touch</h3>
+            <h3 className="text-2xl font-bold text-primary-800 mb-6">{t.contact.getInTouchTitle}</h3>
             <div className="space-y-6">
               <div className="flex items-center space-x-4" data-testid="contact-email">
                 <div className="bg-blue-100 p-3 rounded-lg">
                   <Mail className="text-blue-600 w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-medium text-primary-800">Email</div>
+                  <div className="font-medium text-primary-800">{t.contact.emailLabel}</div>
                   <div className="text-gray-600">israel.soto@muuyal.tech</div>
                 </div>
               </div>
@@ -113,7 +115,7 @@ export default function ContactSection() {
                   <Linkedin className="text-blue-600 w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-medium text-primary-800">LinkedIn</div>
+                  <div className="font-medium text-primary-800">{t.contact.linkedinLabel}</div>
                   <div className="text-gray-600">linkedin.com/in/israel-soto-923649b8</div>
                 </div>
               </div>
@@ -122,7 +124,7 @@ export default function ContactSection() {
                   <Github className="text-blue-600 w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-medium text-primary-800">GitHub</div>
+                  <div className="font-medium text-primary-800">{t.contact.githubLabel}</div>
                   <div className="text-gray-600">github.com/isoto-muuyal</div>
                 </div>
               </div>
@@ -131,30 +133,30 @@ export default function ContactSection() {
                   <MapPin className="text-blue-600 w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-medium text-primary-800">Location</div>
-                  <div className="text-gray-600">Jersey City, NJ</div>
+                  <div className="font-medium text-primary-800">{t.contact.locationLabel}</div>
+                  <div className="text-gray-600">{t.contact.locationValue}</div>
                 </div>
               </div>
             </div>
 
             {/* Resume Download */}
             <div className="mt-8 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-              <h4 className="text-lg font-semibold text-primary-800 mb-3">Resume</h4>
-              <p className="text-gray-600 mb-4">Download my latest resume to learn more about my experience and qualifications.</p>
+              <h4 className="text-lg font-semibold text-primary-800 mb-3">{t.contact.resumeTitle}</h4>
+              <p className="text-gray-600 mb-4">{t.contact.resumeDescription}</p>
               <Button
                 onClick={handleDownloadResume}
                 className="inline-flex items-center space-x-2"
                 data-testid="button-download-resume"
               >
                 <Download className="w-4 h-4" />
-                <span>Download Resume</span>
+                <span>{t.contact.downloadResume}</span>
               </Button>
             </div>
           </div>
 
           {/* Contact Form */}
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-            <h3 className="text-2xl font-bold text-primary-800 mb-6">Send a Message</h3>
+            <h3 className="text-2xl font-bold text-primary-800 mb-6">{t.contact.sendMessageTitle}</h3>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -162,10 +164,10 @@ export default function ContactSection() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>{t.contact.nameLabel}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Your full name"
+                          placeholder={t.contact.namePlaceholder}
                           data-testid="input-name"
                           {...field}
                         />
@@ -180,11 +182,11 @@ export default function ContactSection() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>{t.contact.emailLabel}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="your.email@example.com"
+                          placeholder={t.contact.emailPlaceholder}
                           data-testid="input-email"
                           {...field}
                         />
@@ -199,10 +201,10 @@ export default function ContactSection() {
                   name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subject</FormLabel>
+                      <FormLabel>{t.contact.subjectLabel}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Project collaboration"
+                          placeholder={t.contact.subjectPlaceholder}
                           data-testid="input-subject"
                           {...field}
                         />
@@ -217,11 +219,11 @@ export default function ContactSection() {
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Message</FormLabel>
+                      <FormLabel>{t.contact.messageLabel}</FormLabel>
                       <FormControl>
                         <Textarea
                           rows={5}
-                          placeholder="Tell me about your project or opportunity..."
+                          placeholder={t.contact.messagePlaceholder}
                           className="resize-none"
                           data-testid="textarea-message"
                           {...field}
@@ -238,7 +240,7 @@ export default function ContactSection() {
                   disabled={contactMutation.isPending}
                   data-testid="button-send-message"
                 >
-                  {contactMutation.isPending ? "Sending..." : "Send Message"}
+                  {contactMutation.isPending ? t.contact.sendingButton : t.contact.sendButton}
                 </Button>
               </form>
             </Form>

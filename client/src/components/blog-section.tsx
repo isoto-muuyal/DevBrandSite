@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Article } from "@shared/schema";
 import { Calendar, Clock } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function BlogSection() {
+  const { t } = useLanguage();
   const { data: articles, isLoading } = useQuery<Article[]>({
     queryKey: ["/api/articles"],
   });
@@ -12,8 +14,8 @@ export default function BlogSection() {
       <section id="blog" className="py-20 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4">Latest Articles</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Loading articles...</p>
+            <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4">{t.blog.title}</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.blog.loading}</p>
           </div>
         </div>
       </section>
@@ -25,10 +27,10 @@ export default function BlogSection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4" data-testid="blog-title">
-            Latest Articles
+            {t.blog.title}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Sharing insights, tutorials, and thoughts on modern web development and technology trends.
+            {t.blog.subtitle}
           </p>
         </div>
 
@@ -89,8 +91,8 @@ export default function BlogSection() {
         ) : (
           <div className="text-center py-12">
             <div className="text-6xl text-gray-300 mb-4">📝</div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No articles yet</h3>
-            <p className="text-gray-500">Articles will appear here when added to the articles.json file.</p>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">{t.blog.noArticlesTitle}</h3>
+            <p className="text-gray-500">{t.blog.noArticlesMessage}</p>
           </div>
         )}
 
@@ -102,7 +104,7 @@ export default function BlogSection() {
               data-testid="view-all-articles"
             >
               <i className="fas fa-book-open"></i>
-              <span>View All Articles</span>
+              <span>{t.blog.viewAll}</span>
             </a>
           </div>
         )}

@@ -1,19 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Article } from "@shared/schema";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import Navigation from "@/components/navigation";
+import Footer from "@/components/footer";
 
 export default function BlogPage() {
+  const { t } = useLanguage();
   const { data: articles, isLoading } = useQuery<Article[]>({
     queryKey: ["/api/articles"],
   });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4">Blog</h1>
-            <p className="text-xl text-gray-600">Loading articles...</p>
+      <div className="min-h-screen bg-white">
+        <Navigation activeSection="blog" onSectionClick={() => {}} />
+        <div className="pt-20 py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <h1 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4">{t.blog.pageTitle}</h1>
+              <p className="text-xl text-gray-600">{t.blog.loading}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -22,8 +29,9 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Navigation activeSection="blog" onSectionClick={() => {}} />
       {/* Header */}
-      <header className="bg-gradient-to-br from-primary-50 to-blue-50 py-20">
+      <header className="pt-16 bg-gradient-to-br from-primary-50 to-blue-50 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <a
             href="/"
@@ -31,14 +39,14 @@ export default function BlogPage() {
             data-testid="back-to-home"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
+            {t.blog.backToHome}
           </a>
           <div className="text-center">
             <h1 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4" data-testid="blog-page-title">
-              Blog & Articles
+              {t.blog.pageTitle}
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Sharing insights, tutorials, and thoughts on modern web development and technology trends.
+              {t.blog.subtitle}
             </p>
           </div>
         </div>
@@ -100,7 +108,7 @@ export default function BlogPage() {
                           className="text-blue-600 hover:text-blue-700 font-medium"
                           data-testid={`blog-article-read-more-${index}`}
                         >
-                          Read Full Article →
+                          {t.blog.readMore} →
                         </a>
                       </div>
                     </div>
@@ -111,21 +119,22 @@ export default function BlogPage() {
           ) : (
             <div className="text-center py-20">
               <div className="text-8xl text-gray-300 mb-6">📝</div>
-              <h2 className="text-3xl font-bold text-gray-600 mb-4">No Articles Published Yet</h2>
+              <h2 className="text-3xl font-bold text-gray-600 mb-4">{t.blog.noArticlesTitle}</h2>
               <p className="text-xl text-gray-500 mb-8">
-                Articles will appear here when added to the articles.json file.
+                {t.blog.noArticlesMessage}
               </p>
               <a
                 href="/"
                 className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
+                {t.blog.backToHome}
               </a>
             </div>
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
