@@ -11,11 +11,11 @@ export default function BlogSection() {
 
   if (isLoading) {
     return (
-      <section id="blog" className="py-20 bg-white">
+      <section id="blog" className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4">{t.blog.title}</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.blog.loading}</p>
+            <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 dark:text-white mb-4">{t.blog.title}</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">{t.blog.loading}</p>
           </div>
         </div>
       </section>
@@ -23,13 +23,13 @@ export default function BlogSection() {
   }
 
   return (
-    <section id="blog" className="py-20 bg-white">
+    <section id="blog" className="py-20 bg-white dark:bg-gray-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 mb-4" data-testid="blog-title">
+          <h2 className="text-3xl lg:text-5xl font-bold text-primary-900 dark:text-white mb-4" data-testid="blog-title">
             {t.blog.title}
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             {t.blog.subtitle}
           </p>
         </div>
@@ -39,7 +39,7 @@ export default function BlogSection() {
             {articles.map((article, index) => (
               <article
               key={article.id}
-              className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+              className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
               data-testid={`article-card-${index}`}
             >
               <img
@@ -49,19 +49,19 @@ export default function BlogSection() {
                 data-testid={`article-image-${index}`}
               />
               <div className="p-6">
-                <div className="flex items-center text-sm text-gray-500 mb-3">
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
                   <Calendar className="w-4 h-4 mr-2" />
                   <span data-testid={`article-date-${index}`}>{article.publishedDate}</span>
                   <span className="mx-2">•</span>
                   <Clock className="w-4 h-4 mr-1" />
                   <span data-testid={`article-read-time-${index}`}>{article.readTime}</span>
                 </div>
-                <h3 className="text-xl font-bold text-primary-900 mb-3 hover:text-blue-600 transition-colors duration-200">
+                <h3 className="text-xl font-bold text-primary-900 dark:text-white mb-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
                   <a href="#" data-testid={`article-title-${index}`}>
                     {article.title}
                   </a>
                 </h3>
-                <p className="text-gray-600 mb-4 leading-relaxed" data-testid={`article-excerpt-${index}`}>
+                <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed" data-testid={`article-excerpt-${index}`}>
                   {article.excerpt}
                 </p>
                 <div className="flex items-center justify-between">
@@ -69,7 +69,7 @@ export default function BlogSection() {
                     {article.tags.slice(0, 2).map((tag, tagIndex) => (
                       <span
                         key={tag}
-                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs"
+                        className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs"
                         data-testid={`article-tag-${index}-${tagIndex}`}
                       >
                         {tag}
@@ -78,7 +78,7 @@ export default function BlogSection() {
                   </div>
                   <a
                     href="#"
-                    className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm"
                     data-testid={`article-read-more-${index}`}
                   >
                     Read More →
@@ -90,9 +90,9 @@ export default function BlogSection() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="text-6xl text-gray-300 mb-4">📝</div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">{t.blog.noArticlesTitle}</h3>
-            <p className="text-gray-500">{t.blog.noArticlesMessage}</p>
+            <div className="text-6xl text-gray-300 dark:text-gray-600 mb-4">📝</div>
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">{t.blog.noArticlesTitle}</h3>
+            <p className="text-gray-500 dark:text-gray-500">{t.blog.noArticlesMessage}</p>
           </div>
         )}
 
@@ -100,7 +100,7 @@ export default function BlogSection() {
           <div className="text-center mt-12">
             <a
               href="/blog"
-              className="inline-flex items-center space-x-2 bg-primary-800 text-white px-6 py-3 rounded-lg hover:bg-primary-900 transition-colors duration-200"
+              className="inline-flex items-center space-x-2 bg-primary-800 dark:bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-primary-900 dark:hover:bg-blue-700 transition-colors duration-200"
               data-testid="view-all-articles"
             >
               <i className="fas fa-book-open"></i>

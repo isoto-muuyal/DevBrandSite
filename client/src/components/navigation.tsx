@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSelector from "@/components/language-selector";
+import ThemeSwitcher from "@/components/theme-switcher";
 
 interface NavigationProps {
   activeSection: string;
@@ -36,10 +37,10 @@ export default function Navigation({ activeSection, onSectionClick }: Navigation
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
+    <nav className="fixed top-0 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="font-bold text-xl text-primary-800" data-testid="nav-logo">
+          <div className="font-bold text-xl text-primary-800 dark:text-blue-400" data-testid="nav-logo">
             {t.navigation.name}
           </div>
           
@@ -51,22 +52,26 @@ export default function Navigation({ activeSection, onSectionClick }: Navigation
                 onClick={() => handleNavClick(item.id)}
                 className={`transition-colors duration-200 ${
                   activeSection === item.id
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-blue-600"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
                 }`}
                 data-testid={`nav-${item.id}`}
               >
                 {item.label}
               </button>
             ))}
-            <LanguageSelector />
+            <div className="flex items-center space-x-3">
+              <ThemeSwitcher />
+              <LanguageSelector />
+            </div>
           </div>
 
-          {/* Mobile Menu and Language Selector */}
-          <div className="md:hidden flex items-center space-x-4">
+          {/* Mobile Menu, Theme and Language Selector */}
+          <div className="md:hidden flex items-center space-x-3">
+            <ThemeSwitcher />
             <LanguageSelector />
             <button
-              className="text-gray-600"
+              className="text-gray-600 dark:text-gray-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               data-testid="mobile-menu-toggle"
             >
@@ -81,7 +86,7 @@ export default function Navigation({ activeSection, onSectionClick }: Navigation
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg">
             <div className="px-4 py-2 space-y-2">
               {navItems.map((item) => (
                 <button
@@ -89,8 +94,8 @@ export default function Navigation({ activeSection, onSectionClick }: Navigation
                   onClick={() => handleNavClick(item.id)}
                   className={`block w-full text-left py-2 px-4 rounded-lg transition-colors duration-200 ${
                     activeSection === item.id
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950"
+                      : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
                   data-testid={`mobile-nav-${item.id}`}
                 >

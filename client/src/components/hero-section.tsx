@@ -18,14 +18,14 @@ export default function HeroSection() {
   };
 
   return (
-    <section id="home" className="pt-16 min-h-screen flex items-center bg-gradient-to-br from-primary-50 to-blue-50">
+    <section id="home" className="pt-16 min-h-screen flex items-center bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-primary-900 mb-6 leading-tight">
-              {t.hero.title}<span className="text-blue-600">{t.hero.titleHighlight}</span>
+            <h1 className="text-4xl lg:text-6xl font-bold text-primary-900 dark:text-white mb-6 leading-tight">
+              {t.hero.title}<span className="text-blue-600 dark:text-blue-400">{t.hero.titleHighlight}</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
               {t.hero.subtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -38,7 +38,7 @@ export default function HeroSection() {
               </button>
               <button
                 onClick={handleGetInTouch}
-                className="border-2 border-primary-800 text-primary-800 px-8 py-3 rounded-lg font-semibold hover:bg-primary-800 hover:text-white transition-all duration-200 transform hover:scale-105 text-center"
+                className="border-2 border-primary-800 dark:border-blue-400 text-primary-800 dark:text-blue-400 px-8 py-3 rounded-lg font-semibold hover:bg-primary-800 dark:hover:bg-blue-400 hover:text-white dark:hover:text-white transition-all duration-200 transform hover:scale-105 text-center"
                 data-testid="button-get-in-touch"
               >
                 {t.hero.getInTouchButton}
@@ -52,10 +52,10 @@ export default function HeroSection() {
               className="rounded-2xl shadow-2xl w-full h-auto"
               data-testid="img-hero"
             />
-            <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+            <div className="absolute -bottom-6 -right-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" data-testid="status-indicator"></div>
-                <span className="text-sm font-medium text-gray-700">{t.hero.availableStatus}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.hero.availableStatus}</span>
               </div>
             </div>
           </div>
