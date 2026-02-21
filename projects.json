@@ -19,5 +19,12 @@
     "description": "A TypeScript wrapper for the Ollama API that simplifies local LLM integration. Includes streaming support, error handling, and comprehensive type definitions for seamless development experience.",
     "image_header_url": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
     "github_url": "https://github.com/isoto-muuyal/ai-decision-making"
+  },
+  {
+    "id": "4",
+    "title": "Roblox AI NPC",
+    "description": "Placeholder project for an AI-powered NPC chatbot system in Roblox. Includes conversational NPC behavior, context-aware responses, and a bridge service for game-to-LLM interactions.",
+    "image_header_url": "https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+    "github_url": "https://github.com/your-username/roblox-ai-npc"
   }
 ]

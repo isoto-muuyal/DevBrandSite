@@ -57,24 +57,16 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 443 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5001', 10);
-  
-  console.log(`Starting server on port ${port}`);
+  const port = parseInt(process.env.PORT || "5000", 10);
+  const host = process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
 
-  // Use localhost for local development, 0.0.0.0 for production
-  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
-   try {
-  server.listen({
-    port: "5002", 
-    host: "127.0.0.1"}, () => {
-    log(`serving on ${host}:${port}`);
-  });
+  try {
+    server.listen(port, host, () => {
+      log(`serving on ${host}:${port}`);
+    });
   } catch (err) {
     console.error("Error starting server:", err);
-    process.exit(1);}
+    process.exit(1);
+  }
 
 })();

@@ -1,38 +1,32 @@
-# Use Node.js 18 Alpine as base image for smaller size
-FROM node:18-alpine
-
-# Set working directory in container
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files first for better Docker layer caching
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy all source code
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S portfolio -u 1001
+FROM node:20-alpine AS runner
+WORKDIR /app
 
-# Change ownership of app directory to non-root user
-RUN chown -R portfolio:nodejs /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/projects.json ./projects.json
+COPY --from=builder /app/articles.json ./articles.json
+COPY --from=builder /app/attached_assets ./attached_assets
+
+RUN addgroup -S nodejs && adduser -S portfolio -G nodejs
 USER portfolio
 
-# Expose port 5000
+ENV NODE_ENV=production
+ENV PORT=5000
+
 EXPOSE 5000
 
-# Set environment variable for production
-ENV NODE_ENV=production
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:5000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-# Health check to ensure container is running properly
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5000/api/health || exit 1
-
-# Start the application
 CMD ["npm", "start"]
