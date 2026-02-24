@@ -1,6 +1,6 @@
-# EC2 Setup for GitHub Actions + Docker Deploy
+# EC2 Setup for GitHub Actions + Docker Deploy (ECR)
 
-This project deploys from GitHub Actions to EC2 using Docker and GHCR.
+This project deploys from GitHub Actions to EC2 using Docker and Amazon ECR.
 
 ## 1. What app folder is for
 
@@ -31,7 +31,7 @@ newgrp docker
 mkdir -p ~/apps/devbrandsite
 cat > ~/apps/devbrandsite/.env << 'EOF'
 NODE_ENV=production
-PORT=5000
+PORT=5001
 EOF
 ```
 
@@ -44,16 +44,18 @@ Notes:
 Repository -> Settings -> Secrets and variables -> Actions -> New repository secret
 
 Required:
+- `AWS_ACCESS_KEY_ID`: IAM access key used by GitHub Actions
+- `AWS_SECRET_ACCESS_KEY`: IAM secret key used by GitHub Actions
+- `AWS_REGION`: AWS region where ECR is hosted (example: `us-east-2`)
+- `ECR_REPOSITORY`: ECR repo name (example: `devbrandsite_app`)
 - `EC2_HOST`: `muuyal.tech` or EC2 public IP/DNS (no `https://`)
 - `EC2_USER`: Linux SSH user (for Ubuntu: `ubuntu`)
 - `EC2_SSH_KEY`: full private key content (`-----BEGIN...` to `-----END...`)
 - `EC2_PORT`: usually `22`
-- `GHCR_USERNAME`: your GitHub username (not email)
-- `GHCR_TOKEN`: PAT with at least `read:packages`
 
 Optional:
-- `APP_HOST_PORT`: host port exposed publicly (default: `80`)
-- `APP_CONTAINER_PORT`: container internal port (default: `5000`)
+- `APP_HOST_PORT`: host port exposed publicly (default: `5001`)
+- `APP_CONTAINER_PORT`: container internal port (default: `5001`)
 
 ## 4. Port changes: what must be updated
 
@@ -73,8 +75,8 @@ If you change app port behavior, update all relevant layers:
 - Proxy target must match app host+port (commonly `127.0.0.1:5000`)
 
 Common setups:
-- Direct HTTP: host `80` -> container `5000`
-- Custom direct port: host `8080` -> container `5000`
+- Direct HTTP: host `5001` -> container `5001`
+- Custom direct port: host `8080` -> container `5001`
 - With Nginx: host `80/443` on Nginx, proxy to local app port
 
 ## 5. First deployment test
@@ -85,10 +87,10 @@ After pushing to `main`:
 # on EC2
 docker ps
 docker logs devbrandsite --tail 100
-curl -i http://localhost:5000/api/health
+curl -i http://localhost:5001/api/health
 ```
 
-If host port is 80, public health check:
+If host port is 5001, public health check:
 
 ```bash
 curl -i http://<EC2_HOST>/api/health
@@ -99,6 +101,6 @@ curl -i http://<EC2_HOST>/api/health
 Quick checks:
 - Missing `~/apps/devbrandsite/.env`
 - Wrong `EC2_HOST` or `EC2_SSH_KEY`
-- `GHCR_TOKEN` missing `read:packages`
+- AWS credentials/secrets or `ECR_REPOSITORY` are wrong
 - Security group does not allow your host port
 - Domain DNS not pointing to this EC2 instance
