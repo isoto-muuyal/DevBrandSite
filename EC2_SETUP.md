@@ -32,6 +32,9 @@ mkdir -p ~/apps/devbrandsite
 cat > ~/apps/devbrandsite/.env << 'EOF'
 NODE_ENV=production
 PORT=5001
+SESSION_SECRET=replace-with-long-random-string
+ADMIN_USERNAME=replace-admin-username
+ADMIN_PASSWORD=replace-admin-password
 EOF
 ```
 

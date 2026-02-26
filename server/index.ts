@@ -4,13 +4,18 @@ import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret || !sessionSecret.trim()) {
+  throw new Error("Missing required environment variable: SESSION_SECRET");
+}
+
 const app = express();
 app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "devbrandsite-session-secret",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {

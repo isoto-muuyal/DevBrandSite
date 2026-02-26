@@ -1,5 +1,12 @@
-export const adminSecrets = {
-  username: process.env.ADMIN_USERNAME || "israel.soto",
-  password: process.env.ADMIN_PASSWORD || "shitokai#23",
-};
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value || !value.trim()) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
 
+export const adminSecrets = {
+  username: requireEnv("ADMIN_USERNAME"),
+  password: requireEnv("ADMIN_PASSWORD"),
+};
