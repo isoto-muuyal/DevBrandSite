@@ -68,7 +68,7 @@ jobs:
             AWS_REGION="${{ secrets.AWS_REGION }}"
             ECR_REGISTRY="${{ env.ECR_REGISTRY }}"
             ECR_REPOSITORY="${{ env.ECR_REPOSITORY }}"
-            IMAGE_TAG="latest"
+            IMAGE_TAG="${{ github.sha }}"
 
             if [ -z "$HOST_PORT" ]; then HOST_PORT="5001"; fi
             if [ -z "$CONTAINER_PORT" ]; then CONTAINER_PORT="5001"; fi
