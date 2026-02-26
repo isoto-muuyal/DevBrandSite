@@ -1,18 +1,116 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "https";
 import { storage } from "./storage";
 import { insertContactMessageSchema } from "@shared/schema";
 import path from "path";
 import fs from "fs";
+import { adminSecrets } from "./admin-secrets";
+import { getUniqueVisitCount, getVisitReport, recordVisit } from "./analytics";
+
+function getClientIp(req: Request): string {
+  const forwardedFor = req.headers["x-forwarded-for"];
+  let rawIp = "";
+
+  if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
+    rawIp = forwardedFor.split(",")[0].trim();
+  } else if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
+    rawIp = forwardedFor[0];
+  } else {
+    rawIp = req.socket.remoteAddress || "unknown";
+  }
+
+  if (rawIp.startsWith("::ffff:")) {
+    return rawIp.slice(7);
+  }
+
+  return rawIp;
+}
+
+function getLocationFromHeaders(req: Request): string {
+  const country =
+    req.headers["cf-ipcountry"] ||
+    req.headers["x-vercel-ip-country"] ||
+    req.headers["cloudfront-viewer-country"] ||
+    req.headers["x-appengine-country"];
+
+  const region =
+    req.headers["x-vercel-ip-country-region"] ||
+    req.headers["cloudfront-viewer-country-region"];
+
+  const city = req.headers["x-vercel-ip-city"] || req.headers["cloudfront-viewer-city"];
+
+  const values = [city, region, country]
+    .filter((v): v is string => typeof v === "string" && v.length > 0)
+    .map((v) => v.trim());
+
+  if (values.length === 0) {
+    return "unknown";
+  }
+
+  return values.join(", ");
+}
+
+function requireAdmin(req: Request, res: Response): boolean {
+  if ((req.session as any)?.isAdmin) {
+    return true;
+  }
+
+  res.status(401).json({ message: "Unauthorized" });
+  return false;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint for Docker
   app.get("/api/health", (req, res) => {
-    res.status(200).json({ 
-      status: "healthy", 
+    res.status(200).json({
+      status: "healthy",
       timestamp: new Date().toISOString(),
-      uptime: process.uptime()
+      uptime: process.uptime(),
     });
+  });
+
+  // Track visits and unique visitors (unique by IP)
+  app.post("/api/visit", (req, res) => {
+    const body = req.body as { page?: unknown };
+    const page = typeof body?.page === "string" && body.page.trim() ? body.page.trim() : "/";
+
+    const result = recordVisit({
+      ip: getClientIp(req),
+      location: getLocationFromHeaders(req),
+      page,
+      timestamp: new Date().toISOString(),
+    });
+
+    res.status(200).json(result);
+  });
+
+  app.get("/api/visit/summary", (_req, res) => {
+    res.json({ uniqueVisits: getUniqueVisitCount() });
+  });
+
+  app.post("/api/admin/login", (req, res) => {
+    const { username, password } = req.body || {};
+
+    if (username === adminSecrets.username && password === adminSecrets.password) {
+      (req.session as any).isAdmin = true;
+      return res.status(200).json({ message: "Login successful" });
+    }
+
+    res.status(401).json({ message: "Invalid username or password" });
+  });
+
+  app.post("/api/admin/logout", (req, res) => {
+    req.session.destroy(() => {
+      res.status(200).json({ message: "Logged out" });
+    });
+  });
+
+  app.get("/api/admin/report", (req, res) => {
+    if (!requireAdmin(req, res)) {
+      return;
+    }
+
+    res.status(200).json(getVisitReport());
   });
 
   // Get all projects
@@ -85,12 +183,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Download resume
   app.get("/api/resume/download", async (req, res) => {
     try {
-      const resumePath = path.join(process.cwd(), 'attached_assets', 'Israel_Soto_Resume_1756754540992.pdf');
-      
+      const resumePath = path.join(process.cwd(), "attached_assets", "Israel_Soto_Resume_1756754540992.pdf");
+
       if (fs.existsSync(resumePath)) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename="israel-soto-resume.pdf"');
-        
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", 'attachment; filename="israel-soto-resume.pdf"');
+
         const fileStream = fs.createReadStream(resumePath);
         fileStream.pipe(res);
       } else {
@@ -102,9 +200,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const options = {
-  //key: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/privkey.pem"),
-  //cert: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/fullchain.pem")
-};
+    //key: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/privkey.pem"),
+    //cert: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/fullchain.pem")
+  };
 
   const httpsServer = createServer(options, app);
   return httpsServer;

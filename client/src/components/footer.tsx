@@ -1,8 +1,16 @@
 import { Github, Linkedin, Mail } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+
+type VisitSummary = {
+  uniqueVisits: number;
+};
 
 export default function Footer() {
   const { t } = useLanguage();
+  const { data: visitSummary } = useQuery<VisitSummary>({
+    queryKey: ["/api/visit/summary"],
+  });
   
   return (
     <footer className="bg-primary-900 dark:bg-gray-950 text-white py-12">
@@ -50,6 +58,9 @@ export default function Footer() {
         <div className="border-t border-gray-700 dark:border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400" data-testid="footer-copyright">
             {t.footer.copyright}
+          </p>
+          <p className="mt-2 text-sm text-gray-400" data-testid="footer-unique-visits">
+            Unique visits: {visitSummary?.uniqueVisits ?? 0}
           </p>
         </div>
       </div>

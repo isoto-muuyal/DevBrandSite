@@ -60,6 +60,7 @@ jobs:
 
             APP_DIR="${HOME}/apps/devbrandsite"
             ENV_FILE="${APP_DIR}/.env"
+            DATA_DIR="${APP_DIR}/data"
             CONTAINER="devbrandsite"
             HOST_PORT="${{ secrets.APP_HOST_PORT }}"
             CONTAINER_PORT="${{ secrets.APP_CONTAINER_PORT }}"
@@ -73,6 +74,7 @@ jobs:
             if [ -z "$CONTAINER_PORT" ]; then CONTAINER_PORT="5001"; fi
 
             mkdir -p "$APP_DIR"
+            mkdir -p "$DATA_DIR"
             if [ ! -f "$ENV_FILE" ]; then
               echo "Missing env file: $ENV_FILE"
               exit 1
@@ -98,6 +100,7 @@ jobs:
               --name "$CONTAINER" \
               --restart unless-stopped \
               -p "${HOST_PORT}:${CONTAINER_PORT}" \
+              -v "${DATA_DIR}:/app/data" \
               --env-file "$ENV_FILE" \
               "$IMAGE"
 
