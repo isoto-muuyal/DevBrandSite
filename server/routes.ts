@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { createServer, type Server } from "https";
+import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactMessageSchema } from "@shared/schema";
 import path from "path";
@@ -199,11 +199,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const options = {
-    //key: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/privkey.pem"),
-    //cert: fs.readFileSync("/etc/letsencrypt/live/israelsoto.dev/fullchain.pem")
-  };
-
-  const httpsServer = createServer(options, app);
-  return httpsServer;
+  const httpServer = createServer(app);
+  return httpServer;
 }
