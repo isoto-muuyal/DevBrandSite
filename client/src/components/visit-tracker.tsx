@@ -29,12 +29,16 @@ function track(url: string, payload: Record<string, string>) {
 
 export default function VisitTracker() {
   const [location] = useLocation();
+  const isAdminRoute = location.startsWith("/admin");
 
   useEffect(() => {
+    if (isAdminRoute) return;
     track("/api/visit", { page: location });
-  }, [location]);
+  }, [isAdminRoute, location]);
 
   useEffect(() => {
+    if (isAdminRoute) return;
+
     const onClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -51,7 +55,7 @@ export default function VisitTracker() {
 
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
-  }, [location]);
+  }, [isAdminRoute, location]);
 
   return null;
 }
