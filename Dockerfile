@@ -18,7 +18,7 @@ COPY --from=builder /app/projects.json ./projects.json
 COPY --from=builder /app/articles.json ./articles.json
 COPY --from=builder /app/attached_assets ./attached_assets
 
-RUN addgroup -S nodejs && adduser -S portfolio -G nodejs
+RUN addgroup -g 1000 -S nodejs && adduser -S -u 1000 -G nodejs portfolio
 USER portfolio
 
 ENV NODE_ENV=production
