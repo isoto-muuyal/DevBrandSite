@@ -5,25 +5,36 @@ import { insertContactMessageSchema } from "@shared/schema";
 import path from "path";
 import fs from "fs";
 import { adminSecrets } from "./admin-secrets";
-import { getUniqueVisitCount, getVisitReport, recordVisit } from "./analytics";
+import { getAnalyticsReport, getUniqueVisitCount, recordEvent } from "./analytics";
+
+function normalizeIp(ip: string) {
+  if (ip.startsWith("::ffff:")) {
+    return ip.slice(7);
+  }
+  return ip;
+}
 
 function getClientIp(req: Request): string {
-  const forwardedFor = req.headers["x-forwarded-for"];
-  let rawIp = "";
+  const candidates = [
+    req.headers["cf-connecting-ip"],
+    req.headers["true-client-ip"],
+    req.headers["x-real-ip"],
+    req.headers["x-client-ip"],
+    req.headers["x-forwarded-for"],
+    req.ip,
+    req.socket.remoteAddress,
+  ];
 
-  if (typeof forwardedFor === "string" && forwardedFor.length > 0) {
-    rawIp = forwardedFor.split(",")[0].trim();
-  } else if (Array.isArray(forwardedFor) && forwardedFor.length > 0) {
-    rawIp = forwardedFor[0];
-  } else {
-    rawIp = req.socket.remoteAddress || "unknown";
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.trim()) {
+      return normalizeIp(candidate.split(",")[0].trim());
+    }
+    if (Array.isArray(candidate) && candidate.length > 0) {
+      return normalizeIp(candidate[0]);
+    }
   }
 
-  if (rawIp.startsWith("::ffff:")) {
-    return rawIp.slice(7);
-  }
-
-  return rawIp;
+  return "unknown";
 }
 
 function getLocationFromHeaders(req: Request): string {
@@ -40,14 +51,10 @@ function getLocationFromHeaders(req: Request): string {
   const city = req.headers["x-vercel-ip-city"] || req.headers["cloudfront-viewer-city"];
 
   const values = [city, region, country]
-    .filter((v): v is string => typeof v === "string" && v.length > 0)
-    .map((v) => v.trim());
+    .filter((value): value is string => typeof value === "string" && value.length > 0)
+    .map((value) => value.trim());
 
-  if (values.length === 0) {
-    return "unknown";
-  }
-
-  return values.join(", ");
+  return values.length > 0 ? values.join(", ") : "unknown";
 }
 
 function requireAdmin(req: Request, res: Response): boolean {
@@ -59,9 +66,17 @@ function requireAdmin(req: Request, res: Response): boolean {
   return false;
 }
 
+function buildBaseEvent(req: Request, page: string) {
+  return {
+    ip: getClientIp(req),
+    location: getLocationFromHeaders(req),
+    page,
+    timestamp: new Date().toISOString(),
+  };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint for Docker
-  app.get("/api/health", (req, res) => {
+  app.get("/api/health", (_req, res) => {
     res.status(200).json({
       status: "healthy",
       timestamp: new Date().toISOString(),
@@ -69,19 +84,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Track visits and unique visitors (unique by IP)
   app.post("/api/visit", (req, res) => {
-    const body = req.body as { page?: unknown };
-    const page = typeof body?.page === "string" && body.page.trim() ? body.page.trim() : "/";
-
-    const result = recordVisit({
-      ip: getClientIp(req),
-      location: getLocationFromHeaders(req),
-      page,
-      timestamp: new Date().toISOString(),
+    const page = typeof req.body?.page === "string" && req.body.page.trim() ? req.body.page.trim() : "/";
+    const result = recordEvent({
+      ...buildBaseEvent(req, page),
+      type: "visit",
     });
 
     res.status(200).json(result);
+  });
+
+  app.post("/api/interaction", (req, res) => {
+    const page = typeof req.body?.page === "string" && req.body.page.trim() ? req.body.page.trim() : "/";
+    const target = typeof req.body?.target === "string" && req.body.target.trim() ? req.body.target.trim() : "unknown-target";
+
+    recordEvent({
+      ...buildBaseEvent(req, `${page} :: ${target}`),
+      type: "interaction",
+      target,
+    });
+
+    res.status(200).json({ ok: true });
   });
 
   app.get("/api/visit/summary", (_req, res) => {
@@ -110,30 +133,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return;
     }
 
-    res.status(200).json(getVisitReport());
+    res.status(200).json(getAnalyticsReport());
   });
 
-  // Get all projects
-  app.get("/api/projects", async (req, res) => {
+  app.get("/api/projects", async (_req, res) => {
     try {
       const projects = await storage.getProjects();
       res.json(projects);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch projects" });
     }
   });
 
-  // Get featured projects
-  app.get("/api/projects/featured", async (req, res) => {
+  app.get("/api/projects/featured", async (_req, res) => {
     try {
       const projects = await storage.getFeaturedProjects();
       res.json(projects);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch featured projects" });
     }
   });
 
-  // Get single project
   app.get("/api/projects/:id", async (req, res) => {
     try {
       const project = await storage.getProject(req.params.id);
@@ -141,33 +161,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Project not found" });
       }
       res.json(project);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch project" });
     }
   });
 
-  // Submit contact form
   app.post("/api/contact", async (req, res) => {
     try {
       const validatedData = insertContactMessageSchema.parse(req.body);
       const message = await storage.createContactMessage(validatedData);
       res.status(201).json({ message: "Message sent successfully", id: message.id });
-    } catch (error) {
+    } catch {
       res.status(400).json({ message: "Invalid contact form data" });
     }
   });
 
-  // Get all articles
-  app.get("/api/articles", async (req, res) => {
+  app.get("/api/articles", async (_req, res) => {
     try {
       const articles = await storage.getArticles();
       res.json(articles);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch articles" });
     }
   });
 
-  // Get single article by slug
   app.get("/api/articles/:slug", async (req, res) => {
     try {
       const article = await storage.getArticle(req.params.slug);
@@ -175,17 +192,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Article not found" });
       }
       res.json(article);
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to fetch article" });
     }
   });
 
-  // Download resume
   app.get("/api/resume/download", async (req, res) => {
     try {
       const resumePath = path.join(process.cwd(), "attached_assets", "Israel_Soto_Resume_1756754540992.pdf");
 
       if (fs.existsSync(resumePath)) {
+        recordEvent({
+          ...buildBaseEvent(req, "/contact :: resume-download"),
+          type: "download",
+          target: "resume-download",
+        });
+
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", 'attachment; filename="israel-soto-resume.pdf"');
 
@@ -194,11 +216,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(404).json({ message: "Resume file not found" });
       }
-    } catch (error) {
+    } catch {
       res.status(500).json({ message: "Failed to download resume" });
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  return createServer(app);
 }

@@ -1,7 +1,18 @@
 import fs from "fs";
 import path from "path";
 
-export type VisitEntry = {
+export type AnalyticsEventType = "visit" | "interaction" | "download";
+
+export type AnalyticsEvent = {
+  type: AnalyticsEventType;
+  ip: string;
+  location: string;
+  page: string;
+  target?: string;
+  timestamp: string;
+};
+
+type LegacyVisitEntry = {
   ip: string;
   location: string;
   page: string;
@@ -29,48 +40,78 @@ function ensureFiles() {
   }
 }
 
-function parseExistingLogs() {
-  const raw = fs.readFileSync(VISIT_LOG_FILE, "utf8");
-  if (!raw.trim()) {
-    uniqueIps = new Set<string>();
-    fs.writeFileSync(UNIQUE_COUNT_FILE, "0\n", "utf8");
-    return;
+function normalizeEvent(input: Partial<AnalyticsEvent> | LegacyVisitEntry): AnalyticsEvent | null {
+  if (!input.ip || !input.page || !input.timestamp) {
+    return null;
   }
 
-  const nextUniqueIps = new Set<string>();
+  const type = input.type === "interaction" || input.type === "download" ? input.type : "visit";
+
+  return {
+    type,
+    ip: input.ip,
+    location: input.location || "unknown",
+    page: input.page,
+    target: input.target,
+    timestamp: input.timestamp,
+  };
+}
+
+function readAllEvents(): AnalyticsEvent[] {
+  const raw = fs.readFileSync(VISIT_LOG_FILE, "utf8");
+  const events: AnalyticsEvent[] = [];
+
   for (const line of raw.split("\n")) {
     if (!line.trim()) continue;
     try {
-      const parsed = JSON.parse(line) as Partial<VisitEntry>;
-      if (parsed.ip) {
-        nextUniqueIps.add(parsed.ip);
+      const parsed = JSON.parse(line) as Partial<AnalyticsEvent> | LegacyVisitEntry;
+      const event = normalizeEvent(parsed);
+      if (event) {
+        events.push(event);
       }
     } catch {
       // Ignore malformed log lines.
     }
   }
 
-  uniqueIps = nextUniqueIps;
+  return events;
+}
+
+function rebuildUniqueIps(events: AnalyticsEvent[]) {
+  uniqueIps = new Set(events.filter((event) => event.type === "visit").map((event) => event.ip));
   fs.writeFileSync(UNIQUE_COUNT_FILE, `${uniqueIps.size}\n`, "utf8");
 }
 
 function initialize() {
   if (initialized) return;
   ensureFiles();
-  parseExistingLogs();
+  rebuildUniqueIps(readAllEvents());
   initialized = true;
 }
 
-export function recordVisit(entry: VisitEntry) {
+function countTargets(events: AnalyticsEvent[]) {
+  const counts = new Map<string, number>();
+  for (const event of events) {
+    if (!event.target) continue;
+    counts.set(event.target, (counts.get(event.target) || 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([target, count]) => ({ target, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export function recordEvent(event: AnalyticsEvent) {
   initialize();
 
-  const isUnique = !uniqueIps.has(entry.ip);
-  if (isUnique) {
-    uniqueIps.add(entry.ip);
+  let isUnique = false;
+  if (event.type === "visit" && !uniqueIps.has(event.ip)) {
+    uniqueIps.add(event.ip);
+    isUnique = true;
     fs.writeFileSync(UNIQUE_COUNT_FILE, `${uniqueIps.size}\n`, "utf8");
   }
 
-  fs.appendFileSync(VISIT_LOG_FILE, `${JSON.stringify(entry)}\n`, "utf8");
+  fs.appendFileSync(VISIT_LOG_FILE, `${JSON.stringify(event)}\n`, "utf8");
 
   return {
     isUnique,
@@ -83,32 +124,23 @@ export function getUniqueVisitCount() {
   return uniqueIps.size;
 }
 
-export function getVisitReport(limit = 200) {
+export function getAnalyticsReport(limit = 300) {
   initialize();
-  const raw = fs.readFileSync(VISIT_LOG_FILE, "utf8");
-  const lines = raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  const visits: VisitEntry[] = [];
-  for (const line of lines) {
-    try {
-      const parsed = JSON.parse(line) as VisitEntry;
-      visits.push(parsed);
-    } catch {
-      // Ignore malformed log lines.
-    }
-  }
+  const events = readAllEvents();
+  const visitEvents = events.filter((event) => event.type === "visit");
+  const interactionEvents = events.filter((event) => event.type === "interaction");
+  const downloadEvents = events.filter((event) => event.type === "download");
 
   return {
     uniqueVisits: uniqueIps.size,
-    totalVisits: visits.length,
-    visits: visits.slice(-limit).reverse(),
+    totalVisits: visitEvents.length,
+    totalInteractions: interactionEvents.length,
+    resumeDownloads: downloadEvents.filter((event) => event.target === "resume-download").length,
+    topTargets: countTargets([...interactionEvents, ...downloadEvents]).slice(0, 20),
+    events: events.slice(-limit).reverse(),
     files: {
       uniqueCountFile: UNIQUE_COUNT_FILE,
       visitLogFile: VISIT_LOG_FILE,
     },
   };
 }
-
