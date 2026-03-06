@@ -81,9 +81,14 @@ Add the following variables (optional for local development):
 NODE_ENV=development
 PORT=5000
 DATABASE_URL=your_database_url_here
+MAILERSEND_API_KEY=your_mailersend_api_key
+FROM_EMAIL=your_verified_sender@domain.com
+TO_EMAIL=where-to-receive-contact-messages@domain.com
+FROM_NAME=Your Name or Company
 ```
 
 **Note**: For local development, the app uses in-memory storage by default, so a database connection is not required.
+The contact form email delivery requires the MailerSend variables above.
 
 ### 4. Start the Development Server
 
@@ -240,6 +245,10 @@ You can pass environment variables to the Docker container:
 docker run -p 5000:5000 \
   -e NODE_ENV=production \
   -e PORT=5000 \
+  -e MAILERSEND_API_KEY=your_mailersend_api_key \
+  -e FROM_EMAIL=your_verified_sender@domain.com \
+  -e TO_EMAIL=where-to-receive-contact-messages@domain.com \
+  -e FROM_NAME=Your Name or Company \
   portfolio-website
 ```
 

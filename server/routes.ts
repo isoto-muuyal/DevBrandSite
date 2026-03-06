@@ -4,8 +4,10 @@ import { storage } from "./storage";
 import { insertContactMessageSchema } from "@shared/schema";
 import path from "path";
 import fs from "fs";
+import { ZodError } from "zod";
 import { adminSecrets } from "./admin-secrets";
 import { getAnalyticsReport, getUniqueVisitCount, recordEvent } from "./analytics";
+import { sendContactMessageWithMailerSend } from "./mailersend";
 
 function normalizeIp(ip: string) {
   if (ip.startsWith("::ffff:")) {
@@ -169,10 +171,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contact", async (req, res) => {
     try {
       const validatedData = insertContactMessageSchema.parse(req.body);
+      await sendContactMessageWithMailerSend(validatedData);
       const message = await storage.createContactMessage(validatedData);
       res.status(201).json({ message: "Message sent successfully", id: message.id });
-    } catch {
-      res.status(400).json({ message: "Invalid contact form data" });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid contact form data" });
+      }
+
+      console.error("Failed to process contact message:", error);
+      res.status(500).json({ message: "Failed to send message" });
     }
   });
 
