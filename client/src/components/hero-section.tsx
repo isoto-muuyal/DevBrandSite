@@ -20,6 +20,21 @@ export default function HeroSection() {
   return (
     <section id="home" className="pt-16 min-h-screen flex items-center bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="relative mb-10 overflow-hidden rounded-2xl shadow-xl">
+          <img
+            src="/images/banner.png"
+            alt="Banner"
+            className="h-40 w-full object-cover sm:h-52"
+            data-testid="img-banner"
+          />
+          <img
+            src="/images/profile.jpeg"
+            alt="Profile photo"
+            className="absolute left-4 top-4 h-16 w-16 rounded-full border-4 border-white object-cover shadow-lg sm:h-20 sm:w-20"
+            data-testid="img-profile"
+          />
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-4xl lg:text-6xl font-bold text-primary-900 dark:text-white mb-6 leading-tight">
