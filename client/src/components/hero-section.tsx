@@ -30,7 +30,7 @@ export default function HeroSection() {
           <img
             src="/images/profile.jpeg"
             alt="Profile photo"
-            className="absolute left-4 top-4 h-16 w-16 rounded-full border-4 border-white object-cover shadow-lg sm:h-20 sm:w-20"
+            className="absolute left-[-4px] top-4 h-16 w-16 rounded-full border-4 border-white object-cover shadow-lg sm:h-20 sm:w-20"
             data-testid="img-profile"
           />
         </div>
