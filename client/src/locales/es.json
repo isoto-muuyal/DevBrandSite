@@ -23,15 +23,16 @@
     "journeyText": "Desde que termine la universidad he trabajado en grandes corporativos, pero siempre con mentalidad de emprendedor. Aprendiendo nuevas tecnologías que puedan ayudar a solucionar probelmas de forma rápida, economica y efectiva. Mi experiencia me ha llevado por varias ciudades en México y Estados Unidos, trabajando con gente de diferentes culturas y habilidades.",
     "careerGoalsTitle": "Objetivos Profesionales",
     "careerGoals": [
-      "Liderar proyectos tecnológicos innovadores en una empresa visionaria",
-      "Contribuir a proyectos de código abierto y a la comunidad de desarrolladores",
+      "Liderar proyectos tecnológicos innovadores.",
       "Asesorar a desarrolladores junior y compartir conocimientos a través de contenido",
-      "Explorar tecnologías de vanguardia como la integración de IA/ML"
+      "Explorar tecnologías de vanguardia como la integración de IA/ML",
+      "Liderar equipos para alcanzar su máximo potencial"
     ],
     "skillsTitle": "Habilidades y Tecnologías",
     "skillCategories": {
       "frontend": "Desarrollo Frontend",
       "backend": "Desarrollo Backend",
+      "sdet": "SDET",
       "cloudDevOps": "Nube y DevOps"
     }
   },

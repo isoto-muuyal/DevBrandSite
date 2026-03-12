@@ -23,15 +23,16 @@
     "journeyText": "Since graduating from college, I have worked in large corporations, but always with an entrepreneurial mindset. I keep learning new technologies that can help solve problems quickly, affordably, and effectively. My experience has taken me through several cities in Mexico and the United States, working with people from different cultures and backgrounds.",
     "careerGoalsTitle": "Career Goals",
     "careerGoals": [
-      "Lead innovative tech projects at a forward-thinking company",
-      "Contribute to open-source projects and developer community",
+      "Lead innovative tech projects.",
       "Mentor junior developers and share knowledge through content",
-      "Explore cutting-edge technologies like AI/ML integration"
+      "Explore cutting-edge technologies like AI/ML integration",
+      "Leading teams to reach their full potential"
     ],
     "skillsTitle": "Skills & Technologies",
     "skillCategories": {
       "frontend": "Frontend Development",
       "backend": "Backend Development",
+      "sdet": "SDET",
       "cloudDevOps": "Cloud & DevOps"
     }
   },

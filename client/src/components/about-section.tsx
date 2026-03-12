@@ -6,15 +6,19 @@ export default function AboutSection() {
   const skillCategories = [
     {
       name: t.about.skillCategories.frontend,
-      skills: ["React.js", "TypeScript", "Tailwind CSS", "Next.js"]
+      skills: ["React.js", "TypeScript", "Next.js"]
     },
     {
       name: t.about.skillCategories.backend,
-      skills: ["Node.js", "Spring Boot", "PostgreSQL", "MongoDB"]
+      skills: ["Java", "Spring Boot", "Node.js","REST", "PostgreSQL", "MongoDB"]
+    },
+    {
+      name: t.about.skillCategories.sdet,
+      skills: ["Selenium", "Selenium GRID", "Test Case design", "Framework Design", "JMeter"]
     },
     {
       name: t.about.skillCategories.cloudDevOps,
-      skills: ["AWS", "Docker", "Kubernetes", "CI/CD"]
+      skills: ["AWS", "Docker", "Jenkins", "CI/CD"]
     }
   ];
 
