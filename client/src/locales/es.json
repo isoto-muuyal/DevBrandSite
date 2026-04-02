@@ -49,7 +49,7 @@
     "viewAll": "Ver Todos los Artículos",
     "readMore": "Leer Artículo Completo",
     "noArticlesTitle": "Aún No Hay Artículos Publicados",
-    "noArticlesMessage": "Los artículos aparecerán aquí cuando se agreguen al archivo articles.json.",
+    "noArticlesMessage": "Los artículos aparecerán aquí cuando se agreguen a la carpeta blog_entries.",
     "backToHome": "Volver al Inicio",
     "pageTitle": "Blog y Artículos"
   },

@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Home from "@/pages/home";
 import BlogPage from "@/pages/blog";
+import BlogEntryPage from "@/pages/blog-entry";
 import AdminPage from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import VisitTracker from "@/components/visit-tracker";
@@ -18,6 +19,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/blog" component={BlogPage} />
+        <Route path="/blog/:slug" component={BlogEntryPage} />
         <Route path="/admin" component={AdminPage} />
         <Route component={NotFound} />
       </Switch>

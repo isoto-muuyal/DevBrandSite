@@ -57,7 +57,7 @@ export default function BlogSection() {
                   <span data-testid={`article-read-time-${index}`}>{article.readTime}</span>
                 </div>
                 <h3 className="text-xl font-bold text-primary-900 dark:text-white mb-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-                  <a href="#" data-testid={`article-title-${index}`}>
+                  <a href={`/blog/${article.slug}`} data-testid={`article-title-${index}`}>
                     {article.title}
                   </a>
                 </h3>
@@ -77,7 +77,7 @@ export default function BlogSection() {
                     ))}
                   </div>
                   <a
-                    href="#"
+                    href={`/blog/${article.slug}`}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm"
                     data-testid={`article-read-more-${index}`}
                   >

@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { type Article } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
 type AnalyticsEvent = {
@@ -28,38 +29,94 @@ type Report = {
   };
 };
 
+type EditableEntry = Pick<
+  Article,
+  "id" | "projectId" | "title" | "slug" | "excerpt" | "content" | "publishedDate" | "imageUrl" | "deployedUrl" | "githubUrl"
+>;
+
+function toEditableEntry(article: Article): EditableEntry {
+  return {
+    id: article.id,
+    projectId: article.projectId,
+    title: article.title,
+    slug: article.slug,
+    excerpt: article.excerpt,
+    content: article.content,
+    publishedDate: article.publishedDate,
+    imageUrl: article.imageUrl || "",
+    deployedUrl: article.deployedUrl || "",
+    githubUrl: article.githubUrl || "",
+  };
+}
+
 export default function AdminPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [report, setReport] = useState<Report | null>(null);
+  const [entries, setEntries] = useState<Article[]>([]);
+  const [selectedEntryId, setSelectedEntryId] = useState<string>("");
+  const [draft, setDraft] = useState<EditableEntry | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<"analytics" | "blog">("analytics");
 
-  const loadReport = async () => {
+  const selectedEntry = useMemo(
+    () => entries.find((entry) => entry.id === selectedEntryId) || null,
+    [entries, selectedEntryId],
+  );
+
+  const loadAdminData = async () => {
     setLoading(true);
     setError("");
+
     try {
-      const res = await fetch("/api/admin/report", { credentials: "include" });
-      if (res.status === 401) {
+      const reportRes = await fetch("/api/admin/report", { credentials: "include" });
+      if (reportRes.status === 401) {
         setReport(null);
+        setEntries([]);
+        setSelectedEntryId("");
+        setDraft(null);
         return;
       }
-      if (!res.ok) {
-        const message = await res.text();
-        throw new Error(message || "Failed to load report");
+      if (!reportRes.ok) {
+        const message = await reportRes.text();
+        throw new Error(message || "Failed to load admin report");
       }
-      const data = (await res.json()) as Report;
-      setReport(data);
+
+      const entriesRes = await fetch("/api/admin/blog-entries", { credentials: "include" });
+      if (!entriesRes.ok) {
+        const message = await entriesRes.text();
+        throw new Error(message || "Failed to load blog entries");
+      }
+
+      const reportData = (await reportRes.json()) as Report;
+      const entryData = (await entriesRes.json()) as Article[];
+
+      setReport(reportData);
+      setEntries(entryData);
+      if (entryData.length > 0) {
+        setSelectedEntryId((current) =>
+          current && entryData.some((entry) => entry.id === current) ? current : entryData[0].id,
+        );
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load report");
+      setError(err instanceof Error ? err.message : "Failed to load admin page");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    void loadReport();
+    void loadAdminData();
   }, []);
+
+  useEffect(() => {
+    if (selectedEntry) {
+      setDraft(toEditableEntry(selectedEntry));
+    }
+  }, [selectedEntry]);
 
   const onLogin = async (event: FormEvent) => {
     event.preventDefault();
@@ -68,7 +125,7 @@ export default function AdminPage() {
       await apiRequest("POST", "/api/admin/login", { username, password });
       setUsername("");
       setPassword("");
-      await loadReport();
+      await loadAdminData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     }
@@ -77,12 +134,53 @@ export default function AdminPage() {
   const onLogout = async () => {
     await apiRequest("POST", "/api/admin/logout");
     setReport(null);
+    setEntries([]);
+    setSelectedEntryId("");
+    setDraft(null);
+    setSaveMessage("");
+  };
+
+  const onSaveEntry = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!draft) {
+      return;
+    }
+
+    setSaving(true);
+    setSaveMessage("");
+    setError("");
+
+    try {
+      const response = await apiRequest("PUT", `/api/admin/blog-entries/${draft.id}`, {
+        projectId: draft.projectId,
+        title: draft.title,
+        slug: draft.slug,
+        excerpt: draft.excerpt,
+        content: draft.content,
+        tags: [],
+        publishedDate: draft.publishedDate,
+        readTime: "1 min read",
+        imageUrl: draft.imageUrl,
+        deployedUrl: draft.deployedUrl,
+        githubUrl: draft.githubUrl,
+      });
+
+      const updated = (await response.json()) as Article;
+      setEntries((current) => current.map((entry) => (entry.id === updated.id ? updated : entry)));
+      setSelectedEntryId(updated.id);
+      setDraft(toEditableEntry(updated));
+      setSaveMessage("Blog entry saved.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save blog entry");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-6 text-gray-900">
-        <div className="mx-auto max-w-5xl">Loading admin report...</div>
+        <div className="mx-auto max-w-6xl">Loading admin page...</div>
       </div>
     );
   }
@@ -124,90 +222,265 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-white p-6 text-gray-900" data-analytics-ignore="true">
-      <div className="mx-auto max-w-6xl space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold">Admin Report</h1>
+      <div className="mx-auto max-w-7xl space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold">Admin</h1>
+            <p className="text-sm text-gray-500">Analytics and local blog entry management</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
+              onClick={() => void loadAdminData()}
+              type="button"
+            >
+              Refresh
+            </button>
+            <button
+              className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
+              onClick={onLogout}
+              type="button"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
           <button
-            className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
-            onClick={onLogout}
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${
+              activeTab === "analytics" ? "bg-blue-600 text-white" : "border border-gray-300 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("analytics")}
             type="button"
           >
-            Logout
+            Analytics
+          </button>
+          <button
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${
+              activeTab === "blog" ? "bg-blue-600 text-white" : "border border-gray-300 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("blog")}
+            type="button"
+          >
+            Blog Entries
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-lg border border-gray-300 p-4">
-            <p className="text-sm text-gray-500">Unique Visits</p>
-            <p className="text-2xl font-semibold">{report.uniqueVisits}</p>
-          </div>
-          <div className="rounded-lg border border-gray-300 p-4">
-            <p className="text-sm text-gray-500">Page Visits</p>
-            <p className="text-2xl font-semibold">{report.totalVisits}</p>
-          </div>
-          <div className="rounded-lg border border-gray-300 p-4">
-            <p className="text-sm text-gray-500">Button/Link Clicks</p>
-            <p className="text-2xl font-semibold">{report.totalInteractions}</p>
-          </div>
-          <div className="rounded-lg border border-gray-300 p-4">
-            <p className="text-sm text-gray-500">CV Downloads</p>
-            <p className="text-2xl font-semibold">{report.resumeDownloads}</p>
-          </div>
-        </div>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        {saveMessage && <p className="text-sm text-green-600">{saveMessage}</p>}
 
-        <div className="grid gap-4 lg:grid-cols-[1.1fr,1.9fr]">
-          <div className="space-y-4">
-            <div className="rounded-lg border border-gray-300 p-4 text-sm">
-              <p>
-                <strong>Counter file:</strong> {report.files.uniqueCountFile}
-              </p>
-              <p>
-                <strong>Event log file:</strong> {report.files.visitLogFile}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-gray-300 p-4">
-              <h2 className="mb-3 text-lg font-semibold">Top Clicked Targets</h2>
-              <div className="space-y-2 text-sm">
-                {report.topTargets.length === 0 ? (
-                  <p className="text-gray-500">No interaction data yet.</p>
-                ) : (
-                  report.topTargets.map((item) => (
-                    <div key={item.target} className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
-                      <span className="truncate pr-3">{item.target}</span>
-                      <span className="font-medium">{item.count}</span>
-                    </div>
-                  ))
-                )}
+        {activeTab === "analytics" ? (
+          <>
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="rounded-lg border border-gray-300 p-4">
+                <p className="text-sm text-gray-500">Unique Visits</p>
+                <p className="text-2xl font-semibold">{report.uniqueVisits}</p>
+              </div>
+              <div className="rounded-lg border border-gray-300 p-4">
+                <p className="text-sm text-gray-500">Page Visits</p>
+                <p className="text-2xl font-semibold">{report.totalVisits}</p>
+              </div>
+              <div className="rounded-lg border border-gray-300 p-4">
+                <p className="text-sm text-gray-500">Button/Link Clicks</p>
+                <p className="text-2xl font-semibold">{report.totalInteractions}</p>
+              </div>
+              <div className="rounded-lg border border-gray-300 p-4">
+                <p className="text-sm text-gray-500">CV Downloads</p>
+                <p className="text-2xl font-semibold">{report.resumeDownloads}</p>
               </div>
             </div>
-          </div>
 
-          <div className="overflow-x-auto rounded-lg border border-gray-300">
-            <table className="min-w-full divide-y divide-gray-300 text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-3 py-2 text-left">Timestamp</th>
-                  <th className="px-3 py-2 text-left">Type</th>
-                  <th className="px-3 py-2 text-left">Page / Target</th>
-                  <th className="px-3 py-2 text-left">IP</th>
-                  <th className="px-3 py-2 text-left">Location</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {report.events.map((event, index) => (
-                  <tr key={`${event.timestamp}-${event.ip}-${index}`}>
-                    <td className="whitespace-nowrap px-3 py-2">{event.timestamp}</td>
-                    <td className="px-3 py-2 capitalize">{event.type}</td>
-                    <td className="px-3 py-2">{event.page}</td>
-                    <td className="whitespace-nowrap px-3 py-2">{event.ip}</td>
-                    <td className="px-3 py-2">{event.location}</td>
-                  </tr>
+            <div className="grid gap-4 lg:grid-cols-[1.1fr,1.9fr]">
+              <div className="space-y-4">
+                <div className="rounded-lg border border-gray-300 p-4 text-sm">
+                  <p>
+                    <strong>Counter file:</strong> {report.files.uniqueCountFile}
+                  </p>
+                  <p>
+                    <strong>Event log file:</strong> {report.files.visitLogFile}
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-gray-300 p-4">
+                  <h2 className="mb-3 text-lg font-semibold">Top Clicked Targets</h2>
+                  <div className="space-y-2 text-sm">
+                    {report.topTargets.length === 0 ? (
+                      <p className="text-gray-500">No interaction data yet.</p>
+                    ) : (
+                      report.topTargets.map((item) => (
+                        <div key={item.target} className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
+                          <span className="truncate pr-3">{item.target}</span>
+                          <span className="font-medium">{item.count}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-lg border border-gray-300">
+                <table className="min-w-full divide-y divide-gray-300 text-sm">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-3 py-2 text-left">Timestamp</th>
+                      <th className="px-3 py-2 text-left">Type</th>
+                      <th className="px-3 py-2 text-left">Page / Target</th>
+                      <th className="px-3 py-2 text-left">IP</th>
+                      <th className="px-3 py-2 text-left">Location</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {report.events.map((analyticsEvent, index) => (
+                      <tr key={`${analyticsEvent.timestamp}-${analyticsEvent.ip}-${index}`}>
+                        <td className="whitespace-nowrap px-3 py-2">{analyticsEvent.timestamp}</td>
+                        <td className="px-3 py-2 capitalize">{analyticsEvent.type}</td>
+                        <td className="px-3 py-2">{analyticsEvent.page}</td>
+                        <td className="whitespace-nowrap px-3 py-2">{analyticsEvent.ip}</td>
+                        <td className="px-3 py-2">{analyticsEvent.location}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-[320px,1fr]">
+            <div className="rounded-lg border border-gray-300">
+              <div className="border-b border-gray-300 px-4 py-3">
+                <h2 className="font-semibold">Entries</h2>
+              </div>
+              <div className="max-h-[70vh] overflow-y-auto">
+                {entries.map((entry) => (
+                  <button
+                    key={entry.id}
+                    className={`block w-full border-b border-gray-200 px-4 py-3 text-left last:border-b-0 ${
+                      selectedEntryId === entry.id ? "bg-blue-50" : "hover:bg-gray-50"
+                    }`}
+                    onClick={() => {
+                      setSelectedEntryId(entry.id);
+                      setSaveMessage("");
+                    }}
+                    type="button"
+                  >
+                    <p className="font-medium">{entry.title}</p>
+                    <p className="text-sm text-gray-500">{entry.slug}</p>
+                  </button>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-300 p-6">
+              {draft ? (
+                <form className="space-y-4" onSubmit={onSaveEntry}>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="space-y-1 text-sm">
+                      <span className="font-medium">Project ID</span>
+                      <input
+                        className="w-full rounded border border-gray-300 px-3 py-2 bg-gray-50"
+                        value={draft.projectId}
+                        readOnly
+                      />
+                    </label>
+                    <label className="space-y-1 text-sm">
+                      <span className="font-medium">Published Date</span>
+                      <input
+                        className="w-full rounded border border-gray-300 px-3 py-2"
+                        type="date"
+                        value={draft.publishedDate}
+                        onChange={(e) => setDraft({ ...draft, publishedDate: e.target.value })}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block space-y-1 text-sm">
+                    <span className="font-medium">Title</span>
+                    <input
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      value={draft.title}
+                      onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                      required
+                    />
+                  </label>
+
+                  <label className="block space-y-1 text-sm">
+                    <span className="font-medium">Slug</span>
+                    <input
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      value={draft.slug}
+                      onChange={(e) => setDraft({ ...draft, slug: e.target.value })}
+                      required
+                    />
+                  </label>
+
+                  <label className="block space-y-1 text-sm">
+                    <span className="font-medium">Excerpt</span>
+                    <textarea
+                      className="min-h-24 w-full rounded border border-gray-300 px-3 py-2"
+                      value={draft.excerpt}
+                      onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })}
+                      required
+                    />
+                  </label>
+
+                  <label className="block space-y-1 text-sm">
+                    <span className="font-medium">Body</span>
+                    <textarea
+                      className="min-h-64 w-full rounded border border-gray-300 px-3 py-2"
+                      value={draft.content}
+                      onChange={(e) => setDraft({ ...draft, content: e.target.value })}
+                      required
+                    />
+                  </label>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="space-y-1 text-sm">
+                      <span className="font-medium">Deployed URL</span>
+                      <input
+                        className="w-full rounded border border-gray-300 px-3 py-2"
+                        type="url"
+                        value={draft.deployedUrl}
+                        onChange={(e) => setDraft({ ...draft, deployedUrl: e.target.value })}
+                      />
+                    </label>
+                    <label className="space-y-1 text-sm">
+                      <span className="font-medium">GitHub URL</span>
+                      <input
+                        className="w-full rounded border border-gray-300 px-3 py-2"
+                        type="url"
+                        value={draft.githubUrl}
+                        onChange={(e) => setDraft({ ...draft, githubUrl: e.target.value })}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block space-y-1 text-sm">
+                    <span className="font-medium">Image URL</span>
+                    <input
+                      className="w-full rounded border border-gray-300 px-3 py-2"
+                      type="url"
+                      value={draft.imageUrl}
+                      onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
+                    />
+                  </label>
+
+                  <div className="flex justify-end">
+                    <button
+                      className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                      disabled={saving}
+                      type="submit"
+                    >
+                      {saving ? "Saving..." : "Save Entry"}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <p className="text-sm text-gray-500">Select a blog entry to edit.</p>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

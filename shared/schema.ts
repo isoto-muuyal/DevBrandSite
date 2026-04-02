@@ -11,6 +11,7 @@ export const projects = pgTable("projects", {
   githubUrl: text("github_url"),
   liveUrl: text("live_url"),
   imageUrl: text("image_url"),
+  blogSlug: text("blog_slug"),
   status: text("status").notNull(),
   featured: text("featured").notNull().default("false"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -27,6 +28,7 @@ export const contactMessages = pgTable("contact_messages", {
 
 export const articles = pgTable("articles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: text("project_id").notNull(),
   title: text("title").notNull(),
   excerpt: text("excerpt").notNull(),
   content: text("content").notNull(),
@@ -34,6 +36,8 @@ export const articles = pgTable("articles", {
   publishedDate: text("published_date").notNull(),
   readTime: text("read_time").notNull(),
   imageUrl: text("image_url"),
+  deployedUrl: text("deployed_url"),
+  githubUrl: text("github_url"),
   slug: text("slug").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -53,6 +57,19 @@ export const insertArticleSchema = createInsertSchema(articles).omit({
   createdAt: true,
 });
 
+export const blogEntryFileSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  excerpt: z.string().min(1),
+  content: z.string().min(1),
+  imageUrl: z.string().optional().default(""),
+  deployedUrl: z.string().optional().default(""),
+  githubUrl: z.string().optional().default(""),
+  publishedDate: z.string().min(1),
+});
+
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projects.$inferSelect;
 
@@ -61,3 +78,4 @@ export type ContactMessage = typeof contactMessages.$inferSelect;
 
 export type InsertArticle = z.infer<typeof insertArticleSchema>;
 export type Article = typeof articles.$inferSelect;
+export type BlogEntryFile = z.infer<typeof blogEntryFileSchema>;

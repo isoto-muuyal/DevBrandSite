@@ -1,0 +1,12 @@
+{
+  "id": "3",
+  "projectId": "3",
+  "slug": "ollama-api-wrapper",
+  "title": "Ollama API Wrapper",
+  "excerpt": "A TypeScript wrapper for the Ollama API that simplifies local LLM integration. Includes streaming support, error handling, and comprehensive type definitions for seamless development experience.",
+  "content": "Ollama API Wrapper is one of the featured projects in this portfolio.\n\nThis is placeholder copy for the blog entry. Replace it with the product story, the core user problems, the technical stack, the architecture choices, and the business outcome you want visitors to understand.\n\nUse this section to explain what makes the project interesting and why it matters.",
+  "imageUrl": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+  "deployedUrl": "https://example.com/ollama-api-wrapper",
+  "githubUrl": "https://github.com/isoto-muuyal/ai-decision-making",
+  "publishedDate": "2026-04-02"
+}

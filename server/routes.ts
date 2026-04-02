@@ -8,6 +8,7 @@ import { ZodError } from "zod";
 import { adminSecrets } from "./admin-secrets";
 import { getAnalyticsReport, getUniqueVisitCount, recordEvent } from "./analytics";
 import { sendContactMessageWithMailerSend } from "./mailersend";
+import { insertArticleSchema } from "@shared/schema";
 
 function normalizeIp(ip: string) {
   if (ip.startsWith("::ffff:")) {
@@ -136,6 +137,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.status(200).json(getAnalyticsReport());
+  });
+
+  app.get("/api/admin/blog-entries", async (req, res) => {
+    if (!requireAdmin(req, res)) {
+      return;
+    }
+
+    try {
+      const articles = await storage.getArticles();
+      res.status(200).json(articles);
+    } catch {
+      res.status(500).json({ message: "Failed to load blog entries" });
+    }
+  });
+
+  app.put("/api/admin/blog-entries/:id", async (req, res) => {
+    if (!requireAdmin(req, res)) {
+      return;
+    }
+
+    try {
+      const payload = insertArticleSchema.parse(req.body);
+      const updated = await storage.updateArticle(req.params.id, payload);
+
+      if (!updated) {
+        return res.status(404).json({ message: "Blog entry not found" });
+      }
+
+      res.status(200).json(updated);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid blog entry payload" });
+      }
+
+      const message = error instanceof Error ? error.message : "Failed to update blog entry";
+      res.status(400).json({ message });
+    }
   });
 
   app.get("/api/projects", async (_req, res) => {

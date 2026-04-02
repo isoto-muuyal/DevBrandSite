@@ -111,9 +111,7 @@ export default function ProjectsSection() {
                     {project.status}
                   </span>
                   <a
-                    href={project.githubUrl || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={project.blogSlug ? `/blog/${project.blogSlug}` : "/blog"}
                     className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-200 inline-block text-center"
                     data-testid={`project-details-${index}`}
                   >

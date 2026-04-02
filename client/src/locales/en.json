@@ -49,7 +49,7 @@
     "viewAll": "View All Articles",
     "readMore": "Read Full Article",
     "noArticlesTitle": "No Articles Published Yet",
-    "noArticlesMessage": "Articles will appear here when added to the articles.json file.",
+    "noArticlesMessage": "Articles will appear here when added to the blog_entries folder.",
     "backToHome": "Back to Home",
     "pageTitle": "Blog & Articles"
   },

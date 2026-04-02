@@ -1,0 +1,12 @@
+{
+  "id": "4",
+  "projectId": "4",
+  "slug": "roblox-ai-npc",
+  "title": "Roblox AI NPC",
+  "excerpt": "Placeholder project for an AI-powered NPC chatbot system in Roblox. Includes conversational NPC behavior, context-aware responses, and a bridge service for game-to-LLM interactions.",
+  "content": "Roblox AI NPC is one of the featured projects in this portfolio.\n\nThis is placeholder copy for the blog entry. Replace it with the product story, the core user problems, the technical stack, the architecture choices, and the business outcome you want visitors to understand.\n\nUse this section to explain what makes the project interesting and why it matters.",
+  "imageUrl": "https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+  "deployedUrl": "https://example.com/roblox-ai-npc",
+  "githubUrl": "https://github.com/your-username/roblox-ai-npc",
+  "publishedDate": "2026-04-02"
+}

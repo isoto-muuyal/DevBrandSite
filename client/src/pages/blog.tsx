@@ -82,7 +82,7 @@ export default function BlogPage() {
                       </div>
                       
                       <h2 className="text-2xl font-bold text-primary-900 dark:text-white mb-4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-                        <a href="#" data-testid={`blog-article-title-${index}`}>
+                        <a href={`/blog/${article.slug}`} data-testid={`blog-article-title-${index}`}>
                           {article.title}
                         </a>
                       </h2>
@@ -104,7 +104,7 @@ export default function BlogPage() {
                           ))}
                         </div>
                         <a
-                          href="#"
+                          href={`/blog/${article.slug}`}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                           data-testid={`blog-article-read-more-${index}`}
                         >
