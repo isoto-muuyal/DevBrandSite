@@ -8,8 +8,9 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=5001
+      - CONTENT_DATA_DIR=/app/data
     volumes:
-      - ./data:/app/data
+      - portfolio_data:/app/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5001/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -30,5 +31,5 @@ services:
   #   ports:
   #     - "5432:5432"
 
-# volumes:
-#   postgres_data:
+volumes:
+  portfolio_data:

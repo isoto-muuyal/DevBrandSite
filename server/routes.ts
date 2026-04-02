@@ -152,6 +152,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/blog-entries", async (req, res) => {
+    if (!requireAdmin(req, res)) {
+      return;
+    }
+
+    try {
+      const payload = insertArticleSchema.parse(req.body);
+      const created = await storage.createArticle(payload);
+      res.status(201).json(created);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid blog entry payload" });
+      }
+
+      const message = error instanceof Error ? error.message : "Failed to create blog entry";
+      res.status(400).json({ message });
+    }
+  });
+
   app.put("/api/admin/blog-entries/:id", async (req, res) => {
     if (!requireAdmin(req, res)) {
       return;

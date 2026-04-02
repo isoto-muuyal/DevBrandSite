@@ -37,7 +37,9 @@ export class MemStorage implements IStorage {
   private articleFiles: Map<string, string>;
 
   private readonly projectsPath = path.join(process.cwd(), "projects.json");
-  private readonly blogEntriesDir = path.join(process.cwd(), "blog_entries");
+  private readonly contentRoot = process.env.CONTENT_DATA_DIR || path.join(process.cwd(), "data");
+  private readonly blogEntriesDir = path.join(this.contentRoot, "blog_entries");
+  private readonly bundledBlogEntriesDir = path.join(process.cwd(), "blog_entries");
 
   constructor() {
     this.projects = new Map();
@@ -118,12 +120,26 @@ export class MemStorage implements IStorage {
   }
 
   private ensureBlogEntriesDir() {
+    if (!fs.existsSync(this.contentRoot)) {
+      fs.mkdirSync(this.contentRoot, { recursive: true });
+    }
+
     if (!fs.existsSync(this.blogEntriesDir)) {
       fs.mkdirSync(this.blogEntriesDir, { recursive: true });
     }
   }
 
   private bootstrapBlogEntries() {
+    const existingFiles = fs.readdirSync(this.blogEntriesDir).filter((file) => file.endsWith(".json"));
+
+    if (existingFiles.length === 0 && fs.existsSync(this.bundledBlogEntriesDir)) {
+      const bundledFiles = fs.readdirSync(this.bundledBlogEntriesDir).filter((file) => file.endsWith(".json"));
+      for (const file of bundledFiles) {
+        fs.copyFileSync(path.join(this.bundledBlogEntriesDir, file), path.join(this.blogEntriesDir, file));
+      }
+      return;
+    }
+
     for (const project of this.projects.values()) {
       const slug = this.createSlug(project.name);
       const filePath = path.join(this.blogEntriesDir, `${slug}.json`);
@@ -263,12 +279,31 @@ export class MemStorage implements IStorage {
 
   async createArticle(insertArticle: InsertArticle): Promise<Article> {
     const id = randomUUID();
-    const article: Article = {
-      ...insertArticle,
+    const slug = this.ensureUniqueSlug(insertArticle.slug);
+    const fileRecord: BlogEntryFile = {
       id,
-      createdAt: new Date(),
+      projectId: insertArticle.projectId,
+      slug,
+      title: insertArticle.title,
+      excerpt: insertArticle.excerpt,
+      content: insertArticle.content,
+      imageUrl: insertArticle.imageUrl || "",
+      deployedUrl: insertArticle.deployedUrl || "",
+      githubUrl: insertArticle.githubUrl || "",
+      publishedDate: insertArticle.publishedDate,
     };
+    this.writeBlogEntryFile(fileRecord);
+
+    const article = this.toArticle(fileRecord);
     this.articles.set(id, article);
+
+    const project = this.projects.get(insertArticle.projectId);
+    if (project) {
+      project.blogSlug = article.slug;
+      project.liveUrl = article.deployedUrl;
+      project.githubUrl = article.githubUrl;
+    }
+
     return article;
   }
 

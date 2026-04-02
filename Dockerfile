@@ -13,15 +13,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-COPY --from=builder --chown=node:node /app/dist ./dist
-COPY --from=builder --chown=node:node /app/projects.json ./projects.json
-COPY --from=builder --chown=node:node /app/articles.json ./articles.json
-COPY --from=builder --chown=node:node /app/attached_assets ./attached_assets
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/projects.json ./projects.json
+COPY --from=builder /app/articles.json ./articles.json
+COPY --from=builder /app/blog_entries ./blog_entries
+COPY --from=builder /app/attached_assets ./attached_assets
 
-USER node
+RUN mkdir -p /app/data /app/data/blog_entries
 
 ENV NODE_ENV=production
 ENV PORT=5001
+ENV CONTENT_DATA_DIR=/app/data
 
 EXPOSE 5001
 

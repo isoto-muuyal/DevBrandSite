@@ -177,6 +177,40 @@ export default function AdminPage() {
     }
   };
 
+  const onAddEntry = async () => {
+    setSaving(true);
+    setSaveMessage("");
+    setError("");
+
+    try {
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const response = await apiRequest("POST", "/api/admin/blog-entries", {
+        projectId: "",
+        title: "New Blog Entry",
+        slug: `new-blog-entry-${Date.now()}`,
+        excerpt: "Add a short summary for this blog entry.",
+        content: "Write the full article here.",
+        tags: [],
+        publishedDate: timestamp,
+        readTime: "1 min read",
+        imageUrl: "",
+        deployedUrl: "",
+        githubUrl: "",
+      });
+
+      const created = (await response.json()) as Article;
+      setEntries((current) => [created, ...current]);
+      setSelectedEntryId(created.id);
+      setDraft(toEditableEntry(created));
+      setActiveTab("blog");
+      setSaveMessage("New blog entry created.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create blog entry");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-6 text-gray-900">
@@ -229,6 +263,13 @@ export default function AdminPage() {
             <p className="text-sm text-gray-500">Analytics and local blog entry management</p>
           </div>
           <div className="flex gap-2">
+            <button
+              className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              onClick={() => void onAddEntry()}
+              type="button"
+            >
+              Add Blog Entry
+            </button>
             <button
               className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
               onClick={() => void loadAdminData()}
