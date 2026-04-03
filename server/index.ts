@@ -3,6 +3,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import fs from "fs";
+import path from "path";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret || !sessionSecret.trim()) {
@@ -10,9 +12,15 @@ if (!sessionSecret || !sessionSecret.trim()) {
 }
 
 const app = express();
+const contentRoot = process.env.CONTENT_DATA_DIR || path.join(process.cwd(), "data");
+if (!fs.existsSync(contentRoot)) {
+  fs.mkdirSync(contentRoot, { recursive: true });
+}
+
 app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use("/content", express.static(contentRoot));
 app.use(
   session({
     secret: sessionSecret,

@@ -5,6 +5,49 @@ import { useRoute } from "wouter";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 
+type ContentBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "image"; src: string; alt: string };
+
+function parseContent(content: string): ContentBlock[] {
+  const imagePattern = /^!\[(.*?)\]\((.*?)\)$/;
+  const lines = content.split("\n");
+  const blocks: ContentBlock[] = [];
+  let paragraphBuffer: string[] = [];
+
+  const flushParagraph = () => {
+    const text = paragraphBuffer.join(" ").trim();
+    if (text) {
+      blocks.push({ type: "paragraph", text });
+    }
+    paragraphBuffer = [];
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      continue;
+    }
+
+    const imageMatch = trimmed.match(imagePattern);
+    if (imageMatch) {
+      flushParagraph();
+      blocks.push({
+        type: "image",
+        alt: imageMatch[1] || "Blog diagram",
+        src: imageMatch[2],
+      });
+      continue;
+    }
+
+    paragraphBuffer.push(trimmed);
+  }
+
+  flushParagraph();
+  return blocks;
+}
+
 export default function BlogEntryPage() {
   const [matched, params] = useRoute("/blog/:slug");
   const slug = matched ? params.slug : "";
@@ -41,6 +84,8 @@ export default function BlogEntryPage() {
       </div>
     );
   }
+
+  const contentBlocks = parseContent(article.content);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -106,8 +151,20 @@ export default function BlogEntryPage() {
               />
             )}
             <article className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-              <div className="whitespace-pre-wrap text-lg leading-8 text-gray-700 dark:text-gray-200">
-                {article.content}
+              <div className="space-y-6 text-lg leading-8 text-gray-700 dark:text-gray-200">
+                {contentBlocks.map((block, index) =>
+                  block.type === "image" ? (
+                    <figure key={`${block.src}-${index}`} className="flex flex-col items-center">
+                      <img
+                        src={block.src}
+                        alt={block.alt}
+                        className="mx-auto max-h-[480px] w-auto max-w-full rounded-xl object-contain shadow-md"
+                      />
+                    </figure>
+                  ) : (
+                    <p key={`${block.text.slice(0, 24)}-${index}`}>{block.text}</p>
+                  ),
+                )}
               </div>
             </article>
           </div>

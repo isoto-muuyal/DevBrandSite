@@ -9,6 +9,7 @@ import { adminSecrets } from "./admin-secrets";
 import { getAnalyticsReport, getUniqueVisitCount, recordEvent } from "./analytics";
 import { sendContactMessageWithMailerSend } from "./mailersend";
 import { insertArticleSchema } from "@shared/schema";
+import multer from "multer";
 
 function normalizeIp(ip: string) {
   if (ip.startsWith("::ffff:")) {
@@ -77,6 +78,41 @@ function buildBaseEvent(req: Request, page: string) {
     timestamp: new Date().toISOString(),
   };
 }
+
+const contentRoot = process.env.CONTENT_DATA_DIR || path.join(process.cwd(), "data");
+const blogImagesDir = path.join(contentRoot, "blog_entries", "img");
+
+if (!fs.existsSync(blogImagesDir)) {
+  fs.mkdirSync(blogImagesDir, { recursive: true });
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, blogImagesDir);
+    },
+    filename: (_req, file, cb) => {
+      const extension = path.extname(file.originalname || "").toLowerCase();
+      const safeBase = path
+        .basename(file.originalname || "image", extension)
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "image";
+      cb(null, `${Date.now()}-${safeBase}${extension || ".png"}`);
+    },
+  }),
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Only image uploads are allowed"));
+  },
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/health", (_req, res) => {
@@ -151,6 +187,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to load blog entries" });
     }
   });
+
+  app.post(
+    "/api/admin/blog-images",
+    (req, res, next) => {
+      if (!requireAdmin(req, res)) {
+        return;
+      }
+      next();
+    },
+    upload.single("image"),
+    (req, res) => {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image uploaded" });
+      }
+
+      res.status(201).json({
+        path: `/content/blog_entries/img/${req.file.filename}`,
+        alt: path.basename(req.file.originalname, path.extname(req.file.originalname || "")) || "diagram",
+      });
+    },
+  );
 
   app.post("/api/admin/blog-entries", async (req, res) => {
     if (!requireAdmin(req, res)) {

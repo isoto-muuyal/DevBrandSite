@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { type Article } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -59,8 +59,11 @@ export default function AdminPage() {
   const [draft, setDraft] = useState<EditableEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"analytics" | "blog">("analytics");
+  const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.id === selectedEntryId) || null,
@@ -208,6 +211,93 @@ export default function AdminPage() {
       setError(err instanceof Error ? err.message : "Failed to create blog entry");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onUploadImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !draft) {
+      return;
+    }
+
+    setUploadingImage(true);
+    setSaveMessage("");
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch("/api/admin/blog-images", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to upload image");
+      }
+
+      const data = (await response.json()) as { path: string; alt: string };
+      const imageMarkup = `![${data.alt}](${data.path})`;
+      const textarea = contentTextareaRef.current;
+
+      if (textarea) {
+        const start = textarea.selectionStart ?? draft.content.length;
+        const end = textarea.selectionEnd ?? draft.content.length;
+        const prefix = draft.content.slice(0, start);
+        const suffix = draft.content.slice(end);
+        const separatorBefore = prefix.endsWith("\n") || prefix.length === 0 ? "" : "\n\n";
+        const separatorAfter = suffix.startsWith("\n") || suffix.length === 0 ? "" : "\n\n";
+        const nextContent = `${prefix}${separatorBefore}${imageMarkup}${separatorAfter}${suffix}`;
+        setDraft({ ...draft, content: nextContent });
+      } else {
+        setDraft({ ...draft, content: `${draft.content}\n\n${imageMarkup}`.trim() });
+      }
+
+      setSaveMessage("Image uploaded and inserted into the body.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload image");
+    } finally {
+      event.target.value = "";
+      setUploadingImage(false);
+    }
+  };
+
+  const onUploadCoverImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !draft) {
+      return;
+    }
+
+    setUploadingCoverImage(true);
+    setSaveMessage("");
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await fetch("/api/admin/blog-images", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to upload cover image");
+      }
+
+      const data = (await response.json()) as { path: string };
+      setDraft({ ...draft, imageUrl: data.path });
+      setSaveMessage("Cover image uploaded.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload cover image");
+    } finally {
+      event.target.value = "";
+      setUploadingCoverImage(false);
     }
   };
 
@@ -468,12 +558,37 @@ export default function AdminPage() {
                   <label className="block space-y-1 text-sm">
                     <span className="font-medium">Body</span>
                     <textarea
+                      ref={contentTextareaRef}
                       className="min-h-64 w-full rounded border border-gray-300 px-3 py-2"
                       value={draft.content}
                       onChange={(e) => setDraft({ ...draft, content: e.target.value })}
                       required
                     />
                   </label>
+
+                  <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-medium">Inline images</p>
+                        <p className="text-gray-500">
+                          Upload diagrams to store them in `blog_entries/img` and insert them into the body where the cursor is.
+                        </p>
+                      </div>
+                      <label className="inline-flex cursor-pointer items-center rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-100">
+                        <span>{uploadingImage ? "Uploading..." : "Upload Image"}</span>
+                        <input
+                          className="hidden"
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingImage}
+                          onChange={onUploadImage}
+                        />
+                      </label>
+                    </div>
+                    <p className="mt-2 text-gray-500">
+                      Images use markdown syntax like `![diagram](/content/blog_entries/img/file.png)`.
+                    </p>
+                  </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <label className="space-y-1 text-sm">
@@ -505,6 +620,26 @@ export default function AdminPage() {
                       onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
                     />
                   </label>
+                  <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-medium">Cover image upload</p>
+                        <p className="text-gray-500">
+                          Upload a local image to store it in `blog_entries/img` and fill the Image URL field automatically.
+                        </p>
+                      </div>
+                      <label className="inline-flex cursor-pointer items-center rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-100">
+                        <span>{uploadingCoverImage ? "Uploading..." : "Upload Cover Image"}</span>
+                        <input
+                          className="hidden"
+                          type="file"
+                          accept="image/*"
+                          disabled={uploadingCoverImage}
+                          onChange={onUploadCoverImage}
+                        />
+                      </label>
+                    </div>
+                  </div>
 
                   <div className="flex justify-end">
                     <button
