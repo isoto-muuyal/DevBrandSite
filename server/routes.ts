@@ -300,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/articles", async (_req, res) => {
     try {
-      const articles = await storage.getArticles();
+      const articles = await storage.getPublishedArticles();
       res.json(articles);
     } catch {
       res.status(500).json({ message: "Failed to fetch articles" });
@@ -309,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/articles/:slug", async (req, res) => {
     try {
-      const article = await storage.getArticle(req.params.slug);
+      const article = await storage.getPublishedArticle(req.params.slug);
       if (!article) {
         return res.status(404).json({ message: "Article not found" });
       }

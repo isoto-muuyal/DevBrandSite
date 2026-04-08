@@ -31,7 +31,7 @@ type Report = {
 
 type EditableEntry = Pick<
   Article,
-  "id" | "projectId" | "title" | "slug" | "excerpt" | "content" | "publishedDate" | "imageUrl" | "deployedUrl" | "githubUrl"
+  "id" | "projectId" | "title" | "slug" | "status" | "excerpt" | "content" | "publishedDate" | "imageUrl" | "deployedUrl" | "githubUrl"
 >;
 
 function toEditableEntry(article: Article): EditableEntry {
@@ -40,6 +40,7 @@ function toEditableEntry(article: Article): EditableEntry {
     projectId: article.projectId,
     title: article.title,
     slug: article.slug,
+    status: article.status,
     excerpt: article.excerpt,
     content: article.content,
     publishedDate: article.publishedDate,
@@ -158,6 +159,7 @@ export default function AdminPage() {
         projectId: draft.projectId,
         title: draft.title,
         slug: draft.slug,
+        status: draft.status,
         excerpt: draft.excerpt,
         content: draft.content,
         tags: [],
@@ -191,6 +193,7 @@ export default function AdminPage() {
         projectId: "",
         title: "New Blog Entry",
         slug: `new-blog-entry-${Date.now()}`,
+        status: "unpublished",
         excerpt: "Add a short summary for this blog entry.",
         content: "Write the full article here.",
         tags: [],
@@ -505,6 +508,36 @@ export default function AdminPage() {
             <div className="rounded-lg border border-gray-300 p-6">
               {draft ? (
                 <form className="space-y-4" onSubmit={onSaveEntry}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg font-semibold">{draft.title || "Untitled Post"}</h2>
+                      <p className="text-sm text-gray-500">{draft.slug}</p>
+                    </div>
+                    <label className="flex items-center gap-3 text-sm">
+                      <span className="font-medium text-gray-600">
+                        {draft.status === "published" ? "Published" : "Unpublished"}
+                      </span>
+                      <button
+                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                          draft.status === "published" ? "bg-green-600" : "bg-gray-300"
+                        }`}
+                        onClick={() =>
+                          setDraft({
+                            ...draft,
+                            status: draft.status === "published" ? "unpublished" : "published",
+                          })
+                        }
+                        type="button"
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                            draft.status === "published" ? "translate-x-6" : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </label>
+                  </div>
+
                   <div className="grid gap-4 md:grid-cols-2">
                     <label className="space-y-1 text-sm">
                       <span className="font-medium">Project ID</span>

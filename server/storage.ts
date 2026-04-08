@@ -25,7 +25,9 @@ export interface IStorage {
 
   // Articles
   getArticles(): Promise<Article[]>;
+  getPublishedArticles(): Promise<Article[]>;
   getArticle(slug: string): Promise<Article | undefined>;
+  getPublishedArticle(slug: string): Promise<Article | undefined>;
   createArticle(article: InsertArticle): Promise<Article>;
   updateArticle(id: string, article: InsertArticle): Promise<Article | undefined>;
 }
@@ -152,6 +154,7 @@ export class MemStorage implements IStorage {
         projectId: project.id,
         slug,
         title: project.name,
+        status: "published",
         excerpt: project.description,
         content: `${project.name} is one of the portfolio projects showcased on this site.\n\nThis entry is placeholder content for now. Replace it with a project overview, the main technical decisions, the implementation challenges, and the results that matter most.\n\nYou can edit this entry from the admin page at any time.`,
         imageUrl: project.imageUrl || "",
@@ -191,6 +194,7 @@ export class MemStorage implements IStorage {
       id: entry.id,
       projectId: entry.projectId,
       title: entry.title,
+      status: entry.status,
       excerpt,
       content: entry.content,
       tags: [],
@@ -273,8 +277,16 @@ export class MemStorage implements IStorage {
     return Array.from(this.articles.values());
   }
 
+  async getPublishedArticles(): Promise<Article[]> {
+    return Array.from(this.articles.values()).filter((article) => article.status === "published");
+  }
+
   async getArticle(slug: string): Promise<Article | undefined> {
     return Array.from(this.articles.values()).find(a => a.slug === slug);
+  }
+
+  async getPublishedArticle(slug: string): Promise<Article | undefined> {
+    return Array.from(this.articles.values()).find((article) => article.slug === slug && article.status === "published");
   }
 
   async createArticle(insertArticle: InsertArticle): Promise<Article> {
@@ -285,6 +297,7 @@ export class MemStorage implements IStorage {
       projectId: insertArticle.projectId,
       slug,
       title: insertArticle.title,
+      status: insertArticle.status,
       excerpt: insertArticle.excerpt,
       content: insertArticle.content,
       imageUrl: insertArticle.imageUrl || "",
@@ -319,6 +332,7 @@ export class MemStorage implements IStorage {
       projectId: insertArticle.projectId,
       slug,
       title: insertArticle.title,
+      status: insertArticle.status,
       excerpt: insertArticle.excerpt,
       content: insertArticle.content,
       imageUrl: insertArticle.imageUrl || "",
