@@ -132,14 +132,23 @@ export class MemStorage implements IStorage {
   }
 
   private bootstrapBlogEntries() {
-    const existingFiles = fs.readdirSync(this.blogEntriesDir).filter((file) => file.endsWith(".json"));
+    const existingFiles = new Set(
+      fs.readdirSync(this.blogEntriesDir).filter((file) => file.endsWith(".json")),
+    );
 
-    if (existingFiles.length === 0 && fs.existsSync(this.bundledBlogEntriesDir)) {
-      const bundledFiles = fs.readdirSync(this.bundledBlogEntriesDir).filter((file) => file.endsWith(".json"));
+    if (fs.existsSync(this.bundledBlogEntriesDir)) {
+      const bundledFiles = fs
+        .readdirSync(this.bundledBlogEntriesDir)
+        .filter((file) => file.endsWith(".json"));
+
       for (const file of bundledFiles) {
+        if (existingFiles.has(file)) {
+          continue;
+        }
+
         fs.copyFileSync(path.join(this.bundledBlogEntriesDir, file), path.join(this.blogEntriesDir, file));
+        existingFiles.add(file);
       }
-      return;
     }
 
     for (const project of this.projects.values()) {
