@@ -184,9 +184,13 @@ export class MemStorage implements IStorage {
 
     for (const file of files) {
       const filePath = path.join(this.blogEntriesDir, file);
-      const raw = fs.readFileSync(filePath, "utf8");
-      const parsed = blogEntryFileSchema.parse(JSON.parse(raw));
-      this.storeArticleInMemory(this.toArticle(parsed), filePath);
+      try {
+        const raw = fs.readFileSync(filePath, "utf8");
+        const parsed = blogEntryFileSchema.parse(JSON.parse(raw));
+        this.storeArticleInMemory(this.toArticle(parsed), filePath);
+      } catch (error) {
+        console.error(`Skipping invalid local blog entry: ${filePath}`, error);
+      }
     }
   }
 
@@ -209,9 +213,13 @@ export class MemStorage implements IStorage {
     this.articleFiles.clear();
 
     for (const key of keys) {
-      const raw = await this.readS3ObjectAsString(key);
-      const parsed = blogEntryFileSchema.parse(JSON.parse(raw));
-      this.storeArticleInMemory(this.toArticle(parsed), key);
+      try {
+        const raw = await this.readS3ObjectAsString(key);
+        const parsed = blogEntryFileSchema.parse(JSON.parse(raw));
+        this.storeArticleInMemory(this.toArticle(parsed), key);
+      } catch (error) {
+        console.error(`Skipping invalid S3 blog entry: ${key}`, error);
+      }
     }
   }
 

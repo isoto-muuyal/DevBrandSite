@@ -60,7 +60,7 @@ export const insertArticleSchema = createInsertSchema(articles).omit({
 
 export const blogEntryFileSchema = z.object({
   id: z.string().min(1),
-  projectId: z.string().min(1),
+  projectId: z.string().optional().default(""),
   slug: z.string().min(1),
   title: z.string().min(1),
   status: z.enum(["published", "unpublished"]).default("published"),
