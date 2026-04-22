@@ -29,6 +29,12 @@ type Report = {
   };
 };
 
+type ResumeInfo = {
+  filename: string;
+  updatedAt: string;
+  size: number;
+};
+
 type EditableEntry = Pick<
   Article,
   "id" | "projectId" | "title" | "slug" | "status" | "excerpt" | "content" | "publishedDate" | "imageUrl" | "deployedUrl" | "githubUrl"
@@ -56,14 +62,16 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [report, setReport] = useState<Report | null>(null);
   const [entries, setEntries] = useState<Article[]>([]);
+  const [resume, setResume] = useState<ResumeInfo | null>(null);
   const [selectedEntryId, setSelectedEntryId] = useState<string>("");
   const [draft, setDraft] = useState<EditableEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
-  const [activeTab, setActiveTab] = useState<"analytics" | "blog">("analytics");
+  const [activeTab, setActiveTab] = useState<"analytics" | "blog" | "resume">("analytics");
   const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const selectedEntry = useMemo(
@@ -95,11 +103,19 @@ export default function AdminPage() {
         throw new Error(message || "Failed to load blog entries");
       }
 
+      const resumeRes = await fetch("/api/admin/resume", { credentials: "include" });
+      if (!resumeRes.ok) {
+        const message = await resumeRes.text();
+        throw new Error(message || "Failed to load resume info");
+      }
+
       const reportData = (await reportRes.json()) as Report;
       const entryData = (await entriesRes.json()) as Article[];
+      const resumeData = (await resumeRes.json()) as { resume: ResumeInfo | null };
 
       setReport(reportData);
       setEntries(entryData);
+      setResume(resumeData.resume);
       if (entryData.length > 0) {
         setSelectedEntryId((current) =>
           current && entryData.some((entry) => entry.id === current) ? current : entryData[0].id,
@@ -139,6 +155,7 @@ export default function AdminPage() {
     await apiRequest("POST", "/api/admin/logout");
     setReport(null);
     setEntries([]);
+    setResume(null);
     setSelectedEntryId("");
     setDraft(null);
     setSaveMessage("");
@@ -304,6 +321,43 @@ export default function AdminPage() {
     }
   };
 
+  const onUploadResume = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    setUploadingResume(true);
+    setSaveMessage("");
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("resume", file);
+
+      const response = await fetch("/api/admin/resume", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to upload resume");
+      }
+
+      const data = (await response.json()) as { resume: ResumeInfo };
+      setResume(data.resume);
+      setActiveTab("resume");
+      setSaveMessage("Resume uploaded and replaced.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to upload resume");
+    } finally {
+      event.target.value = "";
+      setUploadingResume(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-6 text-gray-900">
@@ -353,16 +407,18 @@ export default function AdminPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-semibold">Admin</h1>
-            <p className="text-sm text-gray-500">Analytics and local blog entry management</p>
+            <p className="text-sm text-gray-500">Analytics, blog entry management, and resume uploads</p>
           </div>
           <div className="flex gap-2">
-            <button
-              className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              onClick={() => void onAddEntry()}
-              type="button"
-            >
-              Add Blog Entry
-            </button>
+            {activeTab === "blog" && (
+              <button
+                className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                onClick={() => void onAddEntry()}
+                type="button"
+              >
+                Add Blog Entry
+              </button>
+            )}
             <button
               className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
               onClick={() => void loadAdminData()}
@@ -398,6 +454,15 @@ export default function AdminPage() {
             type="button"
           >
             Blog Entries
+          </button>
+          <button
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${
+              activeTab === "resume" ? "bg-blue-600 text-white" : "border border-gray-300 hover:bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("resume")}
+            type="button"
+          >
+            Resumes
           </button>
         </div>
 
@@ -479,7 +544,7 @@ export default function AdminPage() {
               </div>
             </div>
           </>
-        ) : (
+        ) : activeTab === "blog" ? (
           <div className="grid gap-4 lg:grid-cols-[320px,1fr]">
             <div className="rounded-lg border border-gray-300">
               <div className="border-b border-gray-300 px-4 py-3">
@@ -687,6 +752,52 @@ export default function AdminPage() {
               ) : (
                 <p className="text-sm text-gray-500">Select a blog entry to edit.</p>
               )}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-gray-300 p-6">
+            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold">Current Resume</h2>
+                {resume ? (
+                  <>
+                    <p className="text-sm text-gray-700">
+                      <strong>Filename:</strong> {resume.filename}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <strong>Updated:</strong> {resume.updatedAt}
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      <strong>Size:</strong> {Math.round(resume.size / 1024)} KB
+                    </p>
+                    <a
+                      className="inline-flex rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
+                      href="/api/resume/download"
+                    >
+                      Download Current Resume
+                    </a>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">No resume is currently available.</p>
+                )}
+              </div>
+
+              <div className="w-full max-w-md rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm">
+                <p className="font-medium">Replace resume PDF</p>
+                <p className="mt-1 text-gray-500">
+                  Upload a PDF to replace the current public resume download.
+                </p>
+                <label className="mt-4 inline-flex cursor-pointer items-center rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-100">
+                  <span>{uploadingResume ? "Uploading..." : "Upload Resume PDF"}</span>
+                  <input
+                    className="hidden"
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    disabled={uploadingResume}
+                    onChange={onUploadResume}
+                  />
+                </label>
+              </div>
             </div>
           </div>
         )}

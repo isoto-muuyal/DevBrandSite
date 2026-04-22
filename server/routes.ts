@@ -79,28 +79,8 @@ function buildBaseEvent(req: Request, page: string) {
   };
 }
 
-const contentRoot = process.env.CONTENT_DATA_DIR || path.join(process.cwd(), "data");
-const blogImagesDir = path.join(contentRoot, "blog_entries", "img");
-
-if (!fs.existsSync(blogImagesDir)) {
-  fs.mkdirSync(blogImagesDir, { recursive: true });
-}
-
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      cb(null, blogImagesDir);
-    },
-    filename: (_req, file, cb) => {
-      const extension = path.extname(file.originalname || "").toLowerCase();
-      const safeBase = path
-        .basename(file.originalname || "image", extension)
-        .toLowerCase()
-        .replace(/[^a-z0-9-]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "image";
-      cb(null, `${Date.now()}-${safeBase}${extension || ".png"}`);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024,
   },
@@ -114,7 +94,38 @@ const upload = multer({
   },
 });
 
+const resumeUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 15 * 1024 * 1024,
+  },
+  fileFilter: (_req, file, cb) => {
+    const isPdf = file.mimetype === "application/pdf" || path.extname(file.originalname || "").toLowerCase() === ".pdf";
+    if (isPdf) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error("Only PDF uploads are allowed"));
+  },
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.get("/content/blog_entries/img/:filename", async (req, res) => {
+    try {
+      const image = await storage.getBlogImage(req.params.filename);
+      if (!image) {
+        return res.status(404).end();
+      }
+
+      res.setHeader("Content-Type", image.contentType);
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      res.status(200).send(image.body);
+    } catch {
+      res.status(500).end();
+    }
+  });
+
   app.get("/api/health", (_req, res) => {
     res.status(200).json({
       status: "healthy",
@@ -188,6 +199,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/resume", async (req, res) => {
+    if (!requireAdmin(req, res)) {
+      return;
+    }
+
+    try {
+      const resume = await storage.getResumeInfo();
+      res.status(200).json({ resume });
+    } catch {
+      res.status(500).json({ message: "Failed to load resume info" });
+    }
+  });
+
   app.post(
     "/api/admin/blog-images",
     (req, res, next) => {
@@ -197,15 +221,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next();
     },
     upload.single("image"),
-    (req, res) => {
+    async (req, res) => {
       if (!req.file) {
         return res.status(400).json({ message: "No image uploaded" });
       }
 
-      res.status(201).json({
-        path: `/content/blog_entries/img/${req.file.filename}`,
-        alt: path.basename(req.file.originalname, path.extname(req.file.originalname || "")) || "diagram",
-      });
+      try {
+        const saved = await storage.saveBlogImage({
+          buffer: req.file.buffer,
+          mimeType: req.file.mimetype,
+          originalName: req.file.originalname,
+        });
+
+        res.status(201).json(saved);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to upload image";
+        res.status(500).json({ message });
+      }
+    },
+  );
+
+  app.post(
+    "/api/admin/resume",
+    (req, res, next) => {
+      if (!requireAdmin(req, res)) {
+        return;
+      }
+      next();
+    },
+    resumeUpload.single("resume"),
+    async (req, res) => {
+      if (!req.file) {
+        return res.status(400).json({ message: "No resume uploaded" });
+      }
+
+      try {
+        const saved = await storage.saveResume({
+          buffer: req.file.buffer,
+          mimeType: req.file.mimetype,
+          originalName: req.file.originalname,
+        });
+
+        res.status(201).json({ resume: saved });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to upload resume";
+        res.status(500).json({ message });
+      }
     },
   );
 
@@ -321,23 +382,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/resume/download", async (req, res) => {
     try {
-      const resumePath = path.join(process.cwd(), "attached_assets", "Israel_Soto_Resume_1756754540992.pdf");
-
-      if (fs.existsSync(resumePath)) {
-        recordEvent({
-          ...buildBaseEvent(req, "/contact :: resume-download"),
-          type: "download",
-          target: "resume-download",
-        });
-
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader("Content-Disposition", 'attachment; filename="israel-soto-resume.pdf"');
-
-        const fileStream = fs.createReadStream(resumePath);
-        fileStream.pipe(res);
-      } else {
+      const resume = await storage.getResume();
+      if (!resume) {
         res.status(404).json({ message: "Resume file not found" });
+        return;
       }
+
+      recordEvent({
+        ...buildBaseEvent(req, "/contact :: resume-download"),
+        type: "download",
+        target: "resume-download",
+      });
+
+      res.setHeader("Content-Type", resume.contentType);
+      res.setHeader("Content-Disposition", `attachment; filename="${resume.filename}"`);
+      res.status(200).send(resume.body);
     } catch {
       res.status(500).json({ message: "Failed to download resume" });
     }

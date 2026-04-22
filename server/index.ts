@@ -20,7 +20,6 @@ if (!fs.existsSync(contentRoot)) {
 app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use("/content", express.static(contentRoot));
 app.use(
   session({
     secret: sessionSecret,
