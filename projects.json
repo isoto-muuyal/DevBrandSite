@@ -4,7 +4,7 @@
     "title": "BudgetBuddy",
     "description": "A comprehensive personal finance management application built with React and Node.js. Features include expense tracking, budget planning, and financial insights with beautiful data visualizations.",
     "image_header_url": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-    "github_url": "https://github.com/isoto-muuyal/budgetbuddy"
+    "github_url": "https://github.com/isoto-muuyal/budgetBuddy"
   },
   {
     "id": "2",
@@ -25,6 +25,6 @@
     "title": "Roblox AI NPC",
     "description": "Placeholder project for an AI-powered NPC chatbot system in Roblox. Includes conversational NPC behavior, context-aware responses, and a bridge service for game-to-LLM interactions.",
     "image_header_url": "https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
-    "github_url": "https://github.com/your-username/roblox-ai-npc"
+    "github_url": "https://github.com/isoto-muuyal/ai-chat-platform/"
   }
 ]
