@@ -9,18 +9,18 @@
   },
   "hero": {
     "title": "Tech Lead & ",
-    "titleHighlight": "Innovator Developer",
-    "subtitle": "Building the right solution for your needs.",
+    "titleHighlight": "Software Engineer",
+    "subtitle": "This is a window to my personal ideas and projects, any questions, feedback or proposal collaborations are welcome.",
     "viewWorkButton": "View My Work",
     "getInTouchButton": "Get In Touch",
     "availableStatus": "Available for new projects",
-    "imageAlt": "Developer workspace with multiple monitors showing code"
+    "imageAlt": "Code, code, Construyendo"
   },
   "about": {
     "title": "About Me",
     "subtitle": "Technology has fascinated me since childhood, and I have never stopped learning and trying to help businesses grow.",
     "journeyTitle": "My Journey",
-    "journeyText": "Since graduating from college, I have worked in large corporations, but always with an entrepreneurial mindset. I keep learning new technologies that can help solve problems quickly, affordably, and effectively. My experience has taken me through several cities in Mexico and the United States, working with people from different cultures and backgrounds.",
+    "journeyText": "Facinated by technology since 14 yo, having a knack to disamble appliances and put it all back together with less screws than before. I say that was a skill, my parents thought otherwise. I like to be on the creative side of engineering, and like many so many ideas come to mind that is hard to complete them all, but here we are on this journey to try and fail and try again.",
     "careerGoalsTitle": "Career Goals",
     "careerGoals": [
       "Lead innovative tech projects.",
