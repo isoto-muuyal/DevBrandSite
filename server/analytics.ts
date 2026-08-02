@@ -124,7 +124,7 @@ export function getUniqueVisitCount() {
   return uniqueIps.size;
 }
 
-export function getAnalyticsReport(limit = 300) {
+export function getAnalyticsReport(limit = 5000) {
   initialize();
   const events = readAllEvents();
   const visitEvents = events.filter((event) => event.type === "visit");

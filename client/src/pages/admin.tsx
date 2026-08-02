@@ -72,12 +72,48 @@ export default function AdminPage() {
   const [uploadingResume, setUploadingResume] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"analytics" | "blog" | "resume">("analytics");
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
   const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.id === selectedEntryId) || null,
     [entries, selectedEntryId],
   );
+
+  const events = report?.events || [];
+  const totalPages = Math.max(1, Math.ceil(events.length / pageSize));
+  const paginatedEvents = useMemo(
+    () => events.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [events, currentPage, pageSize],
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize, report]);
+
+  const onExportCsv = () => {
+    if (events.length === 0) {
+      return;
+    }
+
+    const headers = ["Timestamp", "Type", "Page/Target", "IP", "Location"];
+    const escapeCsvValue = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    const rows = events.map((event) =>
+      [event.timestamp, event.type, event.page, event.ip, event.location].map(escapeCsvValue).join(","),
+    );
+    const csvContent = [headers.join(","), ...rows].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `analytics-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -518,29 +554,84 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-lg border border-gray-300">
-                <table className="min-w-full divide-y divide-gray-300 text-sm">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-3 py-2 text-left">Timestamp</th>
-                      <th className="px-3 py-2 text-left">Type</th>
-                      <th className="px-3 py-2 text-left">Page / Target</th>
-                      <th className="px-3 py-2 text-left">IP</th>
-                      <th className="px-3 py-2 text-left">Location</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {report.events.map((analyticsEvent, index) => (
-                      <tr key={`${analyticsEvent.timestamp}-${analyticsEvent.ip}-${index}`}>
-                        <td className="whitespace-nowrap px-3 py-2">{analyticsEvent.timestamp}</td>
-                        <td className="px-3 py-2 capitalize">{analyticsEvent.type}</td>
-                        <td className="px-3 py-2">{analyticsEvent.page}</td>
-                        <td className="whitespace-nowrap px-3 py-2">{analyticsEvent.ip}</td>
-                        <td className="px-3 py-2">{analyticsEvent.location}</td>
+              <div className="space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <label className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-600">Rows per page</span>
+                    <select
+                      className="rounded border border-gray-300 px-2 py-1"
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                    >
+                      <option value={20}>20</option>
+                      <option value={30}>30</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </label>
+                  <button
+                    className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={onExportCsv}
+                    disabled={events.length === 0}
+                    type="button"
+                  >
+                    Export CSV
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto rounded-lg border border-gray-300">
+                  <table className="min-w-full divide-y divide-gray-300 text-sm">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Timestamp</th>
+                        <th className="px-3 py-2 text-left">Type</th>
+                        <th className="px-3 py-2 text-left">Page / Target</th>
+                        <th className="px-3 py-2 text-left">IP</th>
+                        <th className="px-3 py-2 text-left">Location</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {paginatedEvents.map((analyticsEvent, index) => (
+                        <tr key={`${analyticsEvent.timestamp}-${analyticsEvent.ip}-${index}`}>
+                          <td className="whitespace-nowrap px-3 py-2">{analyticsEvent.timestamp}</td>
+                          <td className="px-3 py-2 capitalize">{analyticsEvent.type}</td>
+                          <td className="px-3 py-2">{analyticsEvent.page}</td>
+                          <td className="whitespace-nowrap px-3 py-2">{analyticsEvent.ip}</td>
+                          <td className="px-3 py-2">{analyticsEvent.location}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-gray-500">
+                    {events.length === 0
+                      ? "No events yet."
+                      : `Showing ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, events.length)} of ${events.length}`}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                      disabled={currentPage <= 1}
+                      type="button"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      className="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                      disabled={currentPage >= totalPages}
+                      type="button"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </>
