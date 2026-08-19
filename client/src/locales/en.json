@@ -33,7 +33,8 @@
       "frontend": "Frontend Development",
       "backend": "Backend Development",
       "sdet": "SDET",
-      "cloudDevOps": "Cloud & DevOps"
+      "cloudDevOps": "Cloud & DevOps",
+        "ai": "AI & ML DevOps"
     }
   },
   "projects": {
