@@ -1,4 +1,5 @@
 import { type ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { type Article } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -40,6 +41,17 @@ type EditableEntry = Pick<
   "id" | "projectId" | "title" | "slug" | "status" | "excerpt" | "content" | "publishedDate" | "imageUrl" | "deployedUrl" | "githubUrl"
 >;
 
+function getDayKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function getWeekKey(date: Date): string {
+  const day = (date.getUTCDay() + 6) % 7; // Monday = 0
+  const monday = new Date(date);
+  monday.setUTCDate(date.getUTCDate() - day);
+  return getDayKey(monday);
+}
+
 function toEditableEntry(article: Article): EditableEntry {
   return {
     id: article.id,
@@ -74,6 +86,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"analytics" | "blog" | "resume">("analytics");
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
+  const [chartGranularity, setChartGranularity] = useState<"day" | "week">("day");
   const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const selectedEntry = useMemo(
@@ -91,6 +104,44 @@ export default function AdminPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [pageSize, report]);
+
+  const chartData = useMemo(() => {
+    const getKey = chartGranularity === "day" ? getDayKey : getWeekKey;
+    const buckets = new Map<
+      string,
+      { uniqueIps: Set<string>; pageVisits: number; clicks: number; downloads: number }
+    >();
+
+    for (const event of events) {
+      const date = new Date(event.timestamp);
+      if (Number.isNaN(date.getTime())) continue;
+
+      const key = getKey(date);
+      if (!buckets.has(key)) {
+        buckets.set(key, { uniqueIps: new Set(), pageVisits: 0, clicks: 0, downloads: 0 });
+      }
+      const bucket = buckets.get(key)!;
+
+      if (event.type === "visit") {
+        bucket.uniqueIps.add(event.ip);
+        bucket.pageVisits += 1;
+      } else if (event.type === "interaction") {
+        bucket.clicks += 1;
+      } else if (event.type === "download") {
+        bucket.downloads += 1;
+      }
+    }
+
+    return Array.from(buckets.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, bucket]) => ({
+        date: key,
+        "Unique Visits": bucket.uniqueIps.size,
+        "Page Visits": bucket.pageVisits,
+        Clicks: bucket.clicks,
+        Downloads: bucket.downloads,
+      }));
+  }, [events, chartGranularity]);
 
   const onExportCsv = () => {
     if (events.length === 0) {
@@ -524,6 +575,45 @@ export default function AdminPage() {
                 <p className="text-sm text-gray-500">CV Downloads</p>
                 <p className="text-2xl font-semibold">{report.resumeDownloads}</p>
               </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-300 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Activity Over Time</h2>
+                <div className="flex gap-1 rounded border border-gray-300 p-0.5 text-sm">
+                  <button
+                    className={`rounded px-3 py-1 ${chartGranularity === "day" ? "bg-blue-600 text-white" : "hover:bg-gray-100"}`}
+                    onClick={() => setChartGranularity("day")}
+                    type="button"
+                  >
+                    Day
+                  </button>
+                  <button
+                    className={`rounded px-3 py-1 ${chartGranularity === "week" ? "bg-blue-600 text-white" : "hover:bg-gray-100"}`}
+                    onClick={() => setChartGranularity("week")}
+                    type="button"
+                  >
+                    Week
+                  </button>
+                </div>
+              </div>
+              {chartData.length === 0 ? (
+                <p className="text-sm text-gray-500">No events yet.</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="Unique Visits" stroke="#2563eb" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="Page Visits" stroke="#16a34a" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="Clicks" stroke="#d97706" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="Downloads" stroke="#dc2626" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             <div className="grid gap-4 lg:grid-cols-[1.1fr,1.9fr]">
