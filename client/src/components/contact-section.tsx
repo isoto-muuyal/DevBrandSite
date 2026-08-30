@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Mail, MapPin, Download, Github, Linkedin } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getTrafficParams } from "@/lib/traffic-source";
 import type { z } from "zod";
 
 type ContactFormData = z.infer<typeof insertContactMessageSchema>;
@@ -52,7 +53,9 @@ export default function ContactSection() {
 
   const handleDownloadResume = async () => {
     try {
-      const response = await fetch("/api/resume/download");
+      const trafficParams = getTrafficParams();
+      const query = new URLSearchParams(trafficParams).toString();
+      const response = await fetch(`/api/resume/download?${query}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);

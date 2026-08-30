@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { getTrafficParams } from "@/lib/traffic-source";
 
 function getTargetName(element: HTMLElement) {
   const testId = element.getAttribute("data-testid");
@@ -33,7 +34,7 @@ export default function VisitTracker() {
 
   useEffect(() => {
     if (isAdminRoute) return;
-    track("/api/visit", { page: location });
+    track("/api/visit", { page: location, ...getTrafficParams() });
   }, [isAdminRoute, location]);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function VisitTracker() {
       track("/api/interaction", {
         page: location,
         target: getTargetName(clickable),
+        ...getTrafficParams(),
       });
     };
 

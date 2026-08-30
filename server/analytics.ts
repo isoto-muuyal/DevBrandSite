@@ -10,7 +10,50 @@ export type AnalyticsEvent = {
   page: string;
   target?: string;
   timestamp: string;
+  referrer?: string;
+  source?: string;
 };
+
+const KNOWN_SOURCES: Array<{ match: (host: string) => boolean; label: string }> = [
+  { match: (host) => host.includes("google"), label: "google" },
+  { match: (host) => host.includes("bing"), label: "bing" },
+  { match: (host) => host.includes("duckduckgo"), label: "duckduckgo" },
+  { match: (host) => host.includes("linkedin"), label: "linkedin" },
+  { match: (host) => host.includes("github"), label: "github" },
+  { match: (host) => host.includes("twitter") || host === "x.com", label: "twitter/x" },
+  { match: (host) => host.includes("facebook"), label: "facebook" },
+  { match: (host) => host.includes("reddit"), label: "reddit" },
+  { match: (host) => host.includes("youtube"), label: "youtube" },
+];
+
+export function classifySource(referrer: string, utmSource: string | undefined, ownHost: string | undefined): string {
+  if (utmSource && utmSource.trim()) {
+    return utmSource.trim().toLowerCase();
+  }
+
+  if (!referrer) {
+    return "direct";
+  }
+
+  try {
+    const host = new URL(referrer).hostname.replace(/^www\./, "").toLowerCase();
+    const normalizedOwnHost = ownHost?.replace(/^www\./, "").toLowerCase();
+
+    if (normalizedOwnHost && host === normalizedOwnHost) {
+      return "direct";
+    }
+
+    for (const candidate of KNOWN_SOURCES) {
+      if (candidate.match(host)) {
+        return candidate.label;
+      }
+    }
+
+    return host;
+  } catch {
+    return "direct";
+  }
+}
 
 type LegacyVisitEntry = {
   ip: string;
@@ -47,13 +90,17 @@ function normalizeEvent(input: Partial<AnalyticsEvent> | LegacyVisitEntry): Anal
 
   const type = input.type === "interaction" || input.type === "download" ? input.type : "visit";
 
+  const withOptional = input as Partial<AnalyticsEvent>;
+
   return {
     type,
     ip: input.ip,
     location: input.location || "unknown",
     page: input.page,
-    target: input.target,
+    target: withOptional.target,
     timestamp: input.timestamp,
+    referrer: withOptional.referrer || undefined,
+    source: withOptional.source || undefined,
   };
 }
 

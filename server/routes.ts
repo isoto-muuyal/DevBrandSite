@@ -6,7 +6,7 @@ import path from "path";
 import fs from "fs";
 import { ZodError } from "zod";
 import { adminSecrets } from "./admin-secrets";
-import { getAnalyticsReport, getUniqueVisitCount, recordEvent } from "./analytics";
+import { classifySource, getAnalyticsReport, getUniqueVisitCount, recordEvent } from "./analytics";
 import { sendContactMessageWithMailerSend } from "./mailersend";
 import { insertArticleSchema } from "@shared/schema";
 import multer from "multer";
@@ -70,12 +70,21 @@ function requireAdmin(req: Request, res: Response): boolean {
   return false;
 }
 
-function buildBaseEvent(req: Request, page: string) {
+function getTrafficSource(req: Request, params: Record<string, unknown>) {
+  const referrer = typeof params.referrer === "string" ? params.referrer.trim() : "";
+  const utmSource = typeof params.utmSource === "string" ? params.utmSource.trim() : "";
+  const source = classifySource(referrer, utmSource, req.headers.host);
+
+  return { referrer, source };
+}
+
+function buildBaseEvent(req: Request, page: string, params: Record<string, unknown> = {}) {
   return {
     ip: getClientIp(req),
     location: getLocationFromHeaders(req),
     page,
     timestamp: new Date().toISOString(),
+    ...getTrafficSource(req, params),
   };
 }
 
@@ -137,7 +146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/visit", (req, res) => {
     const page = typeof req.body?.page === "string" && req.body.page.trim() ? req.body.page.trim() : "/";
     const result = recordEvent({
-      ...buildBaseEvent(req, page),
+      ...buildBaseEvent(req, page, req.body || {}),
       type: "visit",
     });
 
@@ -149,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const target = typeof req.body?.target === "string" && req.body.target.trim() ? req.body.target.trim() : "unknown-target";
 
     recordEvent({
-      ...buildBaseEvent(req, `${page} :: ${target}`),
+      ...buildBaseEvent(req, `${page} :: ${target}`, req.body || {}),
       type: "interaction",
       target,
     });
@@ -389,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       recordEvent({
-        ...buildBaseEvent(req, "/contact :: resume-download"),
+        ...buildBaseEvent(req, "/contact :: resume-download", req.query || {}),
         type: "download",
         target: "resume-download",
       });

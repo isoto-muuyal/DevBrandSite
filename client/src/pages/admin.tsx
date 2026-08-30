@@ -10,12 +10,24 @@ type AnalyticsEvent = {
   page: string;
   target?: string;
   timestamp: string;
+  referrer?: string;
+  source?: string;
 };
 
 type TargetCount = {
   target: string;
   count: number;
 };
+
+type SourceStat = {
+  source: string;
+  visits: number;
+  interactions: number;
+  downloads: number;
+  conversionRate: number;
+};
+
+type FilterMode = "day" | "week" | "month" | "range";
 
 type Report = {
   uniqueVisits: number;
@@ -50,6 +62,45 @@ function getWeekKey(date: Date): string {
   const monday = new Date(date);
   monday.setUTCDate(date.getUTCDate() - day);
   return getDayKey(monday);
+}
+
+function getMonthKey(date: Date): string {
+  return date.toISOString().slice(0, 7);
+}
+
+function getFilterRange(
+  mode: FilterMode,
+  day: string,
+  week: string,
+  month: string,
+  rangeStart: string,
+  rangeEnd: string,
+): { start: Date; end: Date } {
+  if (mode === "day") {
+    const start = new Date(`${day}T00:00:00.000Z`);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 1);
+    return { start, end };
+  }
+
+  if (mode === "week") {
+    const start = new Date(`${week}T00:00:00.000Z`);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 7);
+    return { start, end };
+  }
+
+  if (mode === "month") {
+    const start = new Date(`${month}-01T00:00:00.000Z`);
+    const end = new Date(start);
+    end.setUTCMonth(end.getUTCMonth() + 1);
+    return { start, end };
+  }
+
+  const start = new Date(`${rangeStart}T00:00:00.000Z`);
+  const end = new Date(`${rangeEnd}T00:00:00.000Z`);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return { start, end };
 }
 
 function toEditableEntry(article: Article): EditableEntry {
@@ -87,6 +138,12 @@ export default function AdminPage() {
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [chartGranularity, setChartGranularity] = useState<"day" | "week">("day");
+  const [filterMode, setFilterMode] = useState<FilterMode>("day");
+  const [filterDay, setFilterDay] = useState(() => getDayKey(new Date()));
+  const [filterWeek, setFilterWeek] = useState(() => getWeekKey(new Date()));
+  const [filterMonth, setFilterMonth] = useState(() => getMonthKey(new Date()));
+  const [rangeStart, setRangeStart] = useState(() => getDayKey(new Date()));
+  const [rangeEnd, setRangeEnd] = useState(() => getDayKey(new Date()));
   const contentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const selectedEntry = useMemo(
@@ -105,6 +162,66 @@ export default function AdminPage() {
     setCurrentPage(1);
   }, [pageSize, report]);
 
+  const filterRange = useMemo(
+    () => getFilterRange(filterMode, filterDay, filterWeek, filterMonth, rangeStart, rangeEnd),
+    [filterMode, filterDay, filterWeek, filterMonth, rangeStart, rangeEnd],
+  );
+
+  const filteredEvents = useMemo(
+    () =>
+      events.filter((event) => {
+        const date = new Date(event.timestamp);
+        return !Number.isNaN(date.getTime()) && date >= filterRange.start && date < filterRange.end;
+      }),
+    [events, filterRange],
+  );
+
+  const filteredStats = useMemo(() => {
+    const visits = filteredEvents.filter((event) => event.type === "visit");
+    return {
+      uniqueVisits: new Set(visits.map((event) => event.ip)).size,
+      totalVisits: visits.length,
+      totalInteractions: filteredEvents.filter((event) => event.type === "interaction").length,
+      resumeDownloads: filteredEvents.filter(
+        (event) => event.type === "download" && event.target === "resume-download",
+      ).length,
+    };
+  }, [filteredEvents]);
+
+  const filteredTopTargets = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const event of filteredEvents) {
+      if (!event.target) continue;
+      counts.set(event.target, (counts.get(event.target) || 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .map(([target, count]) => ({ target, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
+  }, [filteredEvents]);
+
+  const sourceStats = useMemo<SourceStat[]>(() => {
+    const bySource = new Map<string, { visits: number; interactions: number; downloads: number }>();
+    for (const event of filteredEvents) {
+      const source = event.source || "direct";
+      if (!bySource.has(source)) {
+        bySource.set(source, { visits: 0, interactions: 0, downloads: 0 });
+      }
+      const row = bySource.get(source)!;
+      if (event.type === "visit") row.visits += 1;
+      else if (event.type === "interaction") row.interactions += 1;
+      else if (event.type === "download") row.downloads += 1;
+    }
+
+    return Array.from(bySource.entries())
+      .map(([source, row]) => ({
+        source,
+        ...row,
+        conversionRate: row.visits > 0 ? ((row.interactions + row.downloads) / row.visits) * 100 : 0,
+      }))
+      .sort((a, b) => b.visits - a.visits);
+  }, [filteredEvents]);
+
   const chartData = useMemo(() => {
     const getKey = chartGranularity === "day" ? getDayKey : getWeekKey;
     const buckets = new Map<
@@ -112,7 +229,7 @@ export default function AdminPage() {
       { uniqueIps: Set<string>; pageVisits: number; clicks: number; downloads: number }
     >();
 
-    for (const event of events) {
+    for (const event of filteredEvents) {
       const date = new Date(event.timestamp);
       if (Number.isNaN(date.getTime())) continue;
 
@@ -141,7 +258,7 @@ export default function AdminPage() {
         Clicks: bucket.clicks,
         Downloads: bucket.downloads,
       }));
-  }, [events, chartGranularity]);
+  }, [filteredEvents, chartGranularity]);
 
   const onExportCsv = () => {
     if (events.length === 0) {
@@ -558,22 +675,93 @@ export default function AdminPage() {
 
         {activeTab === "analytics" ? (
           <>
+            <div className="rounded-lg border border-gray-300 p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex gap-1 rounded border border-gray-300 p-0.5 text-sm">
+                  {(["day", "week", "month", "range"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      className={`rounded px-3 py-1 capitalize ${
+                        filterMode === mode ? "bg-blue-600 text-white" : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => setFilterMode(mode)}
+                      type="button"
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+
+                {filterMode === "day" && (
+                  <input
+                    className="rounded border border-gray-300 px-2 py-1 text-sm"
+                    type="date"
+                    value={filterDay}
+                    onChange={(e) => setFilterDay(e.target.value)}
+                  />
+                )}
+                {filterMode === "week" && (
+                  <input
+                    className="rounded border border-gray-300 px-2 py-1 text-sm"
+                    type="date"
+                    value={filterWeek}
+                    onChange={(e) => {
+                      const picked = new Date(`${e.target.value}T00:00:00.000Z`);
+                      if (!Number.isNaN(picked.getTime())) {
+                        setFilterWeek(getWeekKey(picked));
+                      }
+                    }}
+                  />
+                )}
+                {filterMode === "month" && (
+                  <input
+                    className="rounded border border-gray-300 px-2 py-1 text-sm"
+                    type="month"
+                    value={filterMonth}
+                    onChange={(e) => setFilterMonth(e.target.value)}
+                  />
+                )}
+                {filterMode === "range" && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <input
+                      className="rounded border border-gray-300 px-2 py-1"
+                      type="date"
+                      value={rangeStart}
+                      onChange={(e) => setRangeStart(e.target.value)}
+                    />
+                    <span className="text-gray-500">to</span>
+                    <input
+                      className="rounded border border-gray-300 px-2 py-1"
+                      type="date"
+                      value={rangeEnd}
+                      onChange={(e) => setRangeEnd(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <p className="text-sm text-gray-500">
+                  {filterRange.start.toISOString().slice(0, 10)} to{" "}
+                  {new Date(filterRange.end.getTime() - 1).toISOString().slice(0, 10)}
+                </p>
+              </div>
+            </div>
+
             <div className="grid gap-4 md:grid-cols-4">
               <div className="rounded-lg border border-gray-300 p-4">
                 <p className="text-sm text-gray-500">Unique Visits</p>
-                <p className="text-2xl font-semibold">{report.uniqueVisits}</p>
+                <p className="text-2xl font-semibold">{filteredStats.uniqueVisits}</p>
               </div>
               <div className="rounded-lg border border-gray-300 p-4">
                 <p className="text-sm text-gray-500">Page Visits</p>
-                <p className="text-2xl font-semibold">{report.totalVisits}</p>
+                <p className="text-2xl font-semibold">{filteredStats.totalVisits}</p>
               </div>
               <div className="rounded-lg border border-gray-300 p-4">
                 <p className="text-sm text-gray-500">Button/Link Clicks</p>
-                <p className="text-2xl font-semibold">{report.totalInteractions}</p>
+                <p className="text-2xl font-semibold">{filteredStats.totalInteractions}</p>
               </div>
               <div className="rounded-lg border border-gray-300 p-4">
                 <p className="text-sm text-gray-500">CV Downloads</p>
-                <p className="text-2xl font-semibold">{report.resumeDownloads}</p>
+                <p className="text-2xl font-semibold">{filteredStats.resumeDownloads}</p>
               </div>
             </div>
 
@@ -616,6 +804,42 @@ export default function AdminPage() {
               )}
             </div>
 
+            <div className="rounded-lg border border-gray-300 p-4">
+              <h2 className="mb-3 text-lg font-semibold">Traffic Sources &amp; Conversion</h2>
+              {sourceStats.length === 0 ? (
+                <p className="text-sm text-gray-500">No visit data for this period.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-300 text-sm">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Source</th>
+                        <th className="px-3 py-2 text-right">Visits</th>
+                        <th className="px-3 py-2 text-right">Clicks</th>
+                        <th className="px-3 py-2 text-right">CV Downloads</th>
+                        <th className="px-3 py-2 text-right">Conversion</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {sourceStats.map((row) => (
+                        <tr key={row.source}>
+                          <td className="px-3 py-2 capitalize">{row.source}</td>
+                          <td className="px-3 py-2 text-right">{row.visits}</td>
+                          <td className="px-3 py-2 text-right">{row.interactions}</td>
+                          <td className="px-3 py-2 text-right">{row.downloads}</td>
+                          <td className="px-3 py-2 text-right">{row.conversionRate.toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="mt-2 text-xs text-gray-500">
+                Conversion = (clicks + CV downloads) / visits for that source. Sources tag by referrer domain or
+                a <code>?utm_source=</code> link param; direct means no referrer (bookmark, typed URL, or same-site nav).
+              </p>
+            </div>
+
             <div className="grid gap-4 lg:grid-cols-[1.1fr,1.9fr]">
               <div className="space-y-4">
                 <div className="rounded-lg border border-gray-300 p-4 text-sm">
@@ -630,10 +854,10 @@ export default function AdminPage() {
                 <div className="rounded-lg border border-gray-300 p-4">
                   <h2 className="mb-3 text-lg font-semibold">Top Clicked Targets</h2>
                   <div className="space-y-2 text-sm">
-                    {report.topTargets.length === 0 ? (
+                    {filteredTopTargets.length === 0 ? (
                       <p className="text-gray-500">No interaction data yet.</p>
                     ) : (
-                      report.topTargets.map((item) => (
+                      filteredTopTargets.map((item) => (
                         <div key={item.target} className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
                           <span className="truncate pr-3">{item.target}</span>
                           <span className="font-medium">{item.count}</span>
