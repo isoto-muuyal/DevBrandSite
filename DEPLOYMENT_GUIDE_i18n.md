@@ -206,13 +206,13 @@ export default function AboutSection() {
   const { t } = useLanguage();  // <-- ADD THIS
   
   const skillCategories = [
-    {
-      name: t.about.skillCategories.frontend,  // <-- CHANGE
-      skills: ["React.js", "TypeScript", "Tailwind CSS", "Next.js"]
+     {
+      name: t.about.skillCategories.backend,  // <-- CHANGE
+      skills: ["Java", "Spring Boot", "Solutions Design", "Microservices"]
     },
     {
-      name: t.about.skillCategories.backend,  // <-- CHANGE
-      skills: ["Node.js", "Spring Boot", "PostgreSQL", "MongoDB"]
+      name: t.about.skillCategories.frontend,  // <-- CHANGE
+      skills: ["React.js", "TypeScript", "Angular"]
     },
     {
       name: t.about.skillCategories.cloudDevOps,  // <-- CHANGE
